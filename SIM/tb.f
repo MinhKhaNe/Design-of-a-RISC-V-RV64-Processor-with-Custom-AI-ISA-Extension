@@ -1,0 +1,3 @@
++incdir+../TB
+
+../TB/*.sv

@@ -1,0 +1,3 @@
+-f rtl.f
+-f tb.f
+-f golden.f
