@@ -79,7 +79,6 @@ module decoder (
 
     case (opcode)
 
-      // ---------------------------------------------------------------
       OP_LUI: begin              // rd = imm_U
         imm_type  = IMM_U;
         alu_a_sel = ALU_A_ZERO;
@@ -89,7 +88,6 @@ module decoder (
         wb_sel    = WB_ALU;
       end
 
-      // ---------------------------------------------------------------
       OP_AUIPC: begin            // rd = PC + imm_U
         imm_type  = IMM_U;
         alu_a_sel = ALU_A_PC;
@@ -99,7 +97,6 @@ module decoder (
         wb_sel    = WB_ALU;
       end
 
-      // ---------------------------------------------------------------
       OP_JAL: begin               // rd = PC+4; PC = PC + imm_J
         imm_type  = IMM_J;
         is_jal    = 1'b1;
@@ -107,7 +104,6 @@ module decoder (
         wb_sel    = WB_PC4;
       end
 
-      // ---------------------------------------------------------------
       OP_JALR: begin               // rd = PC+4; PC = (rs1 + imm_I) & ~1
         imm_type  = IMM_I;
         is_jalr   = 1'b1;
@@ -120,7 +116,6 @@ module decoder (
         if (funct3 != 3'b000) illegal_instr = 1'b1;   // only funct3=000 is defined for JALR
       end
 
-      // ---------------------------------------------------------------
       OP_BRANCH: begin
         imm_type    = IMM_B;
         alu_a_sel   = ALU_A_PC;    // target = PC + imm_B, computed on ALU
@@ -139,7 +134,6 @@ module decoder (
         endcase
       end
 
-      // ---------------------------------------------------------------
       OP_LOAD: begin
         imm_type  = IMM_I;
         alu_a_sel = ALU_A_REG;
@@ -159,7 +153,6 @@ module decoder (
         endcase
       end
 
-      // ---------------------------------------------------------------
       OP_STORE: begin
         imm_type  = IMM_S;
         alu_a_sel = ALU_A_REG;
@@ -179,7 +172,6 @@ module decoder (
         endcase
       end
 
-      // ---------------------------------------------------------------
       OP_IMM: begin                // ADDI/SLTI/.../ANDI, SLLI/SRLI/SRAI
         imm_type  = IMM_I;
         alu_a_sel = ALU_A_REG;
@@ -207,7 +199,6 @@ module decoder (
         endcase
       end
 
-      // ---------------------------------------------------------------
       OP_IMM_32: begin             // ADDIW/SLLIW/SRLIW/SRAIW (32b, RV64 only)
         imm_type  = IMM_I;
         alu_a_sel = ALU_A_REG;
@@ -230,7 +221,6 @@ module decoder (
         endcase
       end
 
-      // ---------------------------------------------------------------
       OP_REG: begin                 // R-type: base ALU ops, or RV64M
         alu_a_sel = ALU_A_REG;
         alu_b_sel = ALU_B_REG;
@@ -271,7 +261,6 @@ module decoder (
         end
       end
 
-      // ---------------------------------------------------------------
       OP_REG_32: begin              // ADDW/SUBW/... (RV64 only), or RV64M *W
         alu_a_sel = ALU_A_REG;
         alu_b_sel = ALU_B_REG;
@@ -303,12 +292,7 @@ module decoder (
         end
       end
 
-      // ---------------------------------------------------------------
       OP_SYSTEM: begin
-        // ECALL/EBREAK/CSR ops: stubbed as no-op here. Wire into your
-        // trap/CSR unit when you add M-mode support (Step 6 of the
-        // pipeline plan). Not treated as illegal so the pipeline doesn't
-        // stall on it while you're still bringing up the base ISA.
         reg_write = 1'b0;
       end
 

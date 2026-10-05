@@ -21,10 +21,41 @@ module mul_div_unit (
   localparam int DIV_CYCLES = 64;   // 1 bit per cycle, classic restoring divider
 
   typedef enum logic [1:0] {S_IDLE, S_RUN, S_DONE} state_e;
-  state_e state, state_n;
 
-  logic [6:0] cyc_left;
-  logic       op_is_mul_q;
+  state_e       state, state_n;
+  logic [6:0]   cyc_left;
+  logic         op_is_mul_q;
+  logic         sel_is_signed, sel_is_word;
+  logic [63:0]  sel_a_ext, sel_b_ext;
+  logic         sel_a_neg, sel_b_neg;
+  logic [63:0]  sel_a_mag, sel_b_mag;
+  logic         sel_div_by_zero, sel_overflow;
+  div_op_e      div_op_q;
+  logic         div_is_word_q;
+  logic         div_quot_neg, div_rem_neg;
+  logic         div_by_zero_q, div_overflow_q;
+  logic [63:0]  div_a_ext_q;               
+  logic [63:0]  div_r_reg, div_q_reg, div_d_reg;
+  logic [63:0]  div_r_shifted;
+  logic [64:0]  div_trial;
+  logic [127:0] mul_corrected;
+  logic [63:0]  mul_result;
+  logic [63:0]  div_quot_signed, div_rem_signed, div_result_full, div_result;
+
+  assign result           = op_is_mul_q ? mul_result : div_result;
+  assign div_r_shifted    = {div_r_reg[62:0], div_q_reg[63]};
+  assign div_trial        = {1'b0, div_r_shifted} - {1'b0, div_d_reg};
+  assign sel_is_signed    = op_is_signed_div(div_op);
+  assign sel_is_word      = op_is_word_div(div_op);
+  assign sel_a_ext        = sel_is_word ? (sel_is_signed ? {{32{a[31]}}, a[31:0]} : {32'b0, a[31:0]}) : a;
+  assign sel_b_ext        = sel_is_word ? (sel_is_signed ? {{32{b[31]}}, b[31:0]} : {32'b0, b[31:0]}) : b;
+  assign sel_a_neg        = sel_is_signed && sel_a_ext[63];
+  assign sel_b_neg        = sel_is_signed && sel_b_ext[63];
+  assign sel_a_mag        = sel_a_neg ? (~sel_a_ext + 64'd1) : sel_a_ext;
+  assign sel_b_mag        = sel_b_neg ? (~sel_b_ext + 64'd1) : sel_b_ext;
+  assign sel_div_by_zero  = (sel_b_ext == 64'b0);
+  assign sel_overflow     = sel_is_signed &&  (sel_a_ext == 64'h8000_0000_0000_0000) &&
+                                              (sel_b_ext == 64'hFFFF_FFFF_FFFF_FFFF);
 
   // ---------------------------------------------------------------
   // Shared control FSM
@@ -45,9 +76,7 @@ module mul_div_unit (
   assign busy = (state == S_IDLE && req) || (state == S_RUN);
   assign done = (state == S_DONE);
 
-  // =================================================================
   // Multiplier datapath
-  // =================================================================
   logic [63:0]  mul_a_q;         // multiplicand, fixed for the whole op
   logic [63:0]  mul_b_orig_q;    // original multiplier, kept for sign fixup
   logic [63:0]  mplier;          // shifts left 16 bits/cycle (MSB chunk first)
@@ -81,42 +110,7 @@ module mul_div_unit (
     endcase
   endfunction
 
-  // ---- operand prep (combinational off the live inputs; only latched
-  //      at the exact S_IDLE&&req cycle, so it's safe to leave free-running)
-  logic        sel_is_signed, sel_is_word;
-  logic [63:0] sel_a_ext, sel_b_ext;
-  logic        sel_a_neg, sel_b_neg;
-  logic [63:0] sel_a_mag, sel_b_mag;
-  logic        sel_div_by_zero, sel_overflow;
-
-  assign sel_is_signed = op_is_signed_div(div_op);
-  assign sel_is_word   = op_is_word_div(div_op);
-  assign sel_a_ext = sel_is_word ? (sel_is_signed ? {{32{a[31]}}, a[31:0]} : {32'b0, a[31:0]}) : a;
-  assign sel_b_ext = sel_is_word ? (sel_is_signed ? {{32{b[31]}}, b[31:0]} : {32'b0, b[31:0]}) : b;
-  assign sel_a_neg = sel_is_signed && sel_a_ext[63];
-  assign sel_b_neg = sel_is_signed && sel_b_ext[63];
-  assign sel_a_mag = sel_a_neg ? (~sel_a_ext + 64'd1) : sel_a_ext;
-  assign sel_b_mag = sel_b_neg ? (~sel_b_ext + 64'd1) : sel_b_ext;
-  assign sel_div_by_zero = (sel_b_ext == 64'b0);
-  assign sel_overflow    = sel_is_signed && (sel_a_ext == 64'h8000_0000_0000_0000) &&
-                                            (sel_b_ext == 64'hFFFF_FFFF_FFFF_FFFF);
-
-  div_op_e     div_op_q;
-  logic        div_is_word_q;
-  logic        div_quot_neg, div_rem_neg;
-  logic        div_by_zero_q, div_overflow_q;
-  logic [63:0] div_a_ext_q;               // extended dividend: doubles as the
-                                           // div-by-zero / overflow special result
-  logic [63:0] div_r_reg, div_q_reg, div_d_reg;
-
-  logic [63:0] div_r_shifted;
-  logic [64:0] div_trial;
-  assign div_r_shifted = {div_r_reg[62:0], div_q_reg[63]};
-  assign div_trial     = {1'b0, div_r_shifted} - {1'b0, div_d_reg};
-
-  // =================================================================
   // Sequencer: latch operands on entry, iterate for the rest
-  // =================================================================
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       cyc_left <= 7'd0;
@@ -159,10 +153,7 @@ module mul_div_unit (
     end
   end
 
-  // =================================================================
   // Result mux (combinational; only consumed by the caller while done=1)
-  // =================================================================
-  logic [127:0] mul_corrected;
   always_comb begin
     unique case (mul_op_q)
       MUL_MULH:   mul_corrected = acc - (mul_a_q[63]      ? ({64'b0, mul_b_orig_q} << 64) : 128'b0)
@@ -172,7 +163,6 @@ module mul_div_unit (
     endcase
   end
 
-  logic [63:0] mul_result;
   always_comb begin
     unique case (mul_op_q)
       MUL_MUL:    mul_result = acc[63:0];
@@ -184,7 +174,6 @@ module mul_div_unit (
     endcase
   end
 
-  logic [63:0] div_quot_signed, div_rem_signed, div_result_full, div_result;
   always_comb begin
     div_quot_signed = div_quot_neg ? (~div_q_reg + 64'd1) : div_q_reg;
     div_rem_signed  = div_rem_neg  ? (~div_r_reg + 64'd1) : div_r_reg;
@@ -198,7 +187,5 @@ module mul_div_unit (
 
     div_result = div_is_word_q ? {{32{div_result_full[31]}}, div_result_full[31:0]} : div_result_full;
   end
-
-  assign result = op_is_mul_q ? mul_result : div_result;
 
 endmodule

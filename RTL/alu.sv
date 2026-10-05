@@ -26,8 +26,7 @@ module alu (
       ALU_SRA:  result = $signed(a) >>> b[5:0];
       ALU_OR:   result = a | b;
       ALU_AND:  result = a & b;
-
-      // ---- 32-bit "W" variants: compute on low 32 bits, sign-extend result ----
+      // 32-bit "W" variants: compute on low 32 bits, sign-extend result 
       ALU_ADDW: begin
         result32 = a32 + b32;
         result   = {{32{result32[31]}}, result32};
@@ -48,8 +47,9 @@ module alu (
         result32 = $signed(a32) >>> b[4:0];
         result   = {{32{result32[31]}}, result32};
       end
-
-      default: result = 64'b0;
+      default: begin
+        result = 64'b0;
+      end
     endcase
   end
 

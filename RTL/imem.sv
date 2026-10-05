@@ -3,354 +3,210 @@ module imem (
     output logic [31:0] instr
 );
 
-    logic [31:0] mem [0:1023];
+    logic [15:0] mem [0:2047];
 
     initial begin
 
-        // =========================================================
-        // INTEGER IMMEDIATE
-        // =========================================================
-
-        // 0x000: addi x1, x0, 5
-        mem[0] = 32'h00500093;
-
-        // 0x004: addi x2, x0, -3
-        mem[1] = 32'hFFD00113;
-
-        // =========================================================
-        // INTEGER REGISTER-REGISTER
-        // =========================================================
-
-        // 0x008: add x3, x1, x2
-        mem[2] = 32'h002081B3;
-
-        // 0x00c: sub x4, x1, x2
-        mem[3] = 32'h40208233;
-
-        // 0x010: sll x5, x1, x2
-        mem[4] = 32'h002092B3;
-
-        // 0x014: slt x6, x2, x1
-        mem[5] = 32'h00112333;
-
-        // 0x018: sltu x7, x2, x1
-        mem[6] = 32'h001133B3;
-
-        // 0x01c: xor x8, x1, x2
-        mem[7] = 32'h0020C433;
-
-        // 0x020: srl x9, x1, x2
-        mem[8] = 32'h0020D4B3;
-
-        // 0x024: sra x10, x2, x1
-        mem[9] = 32'h40115533;
-
-        // 0x028: or x11, x1, x2
-        mem[10] = 32'h0020E5B3;
-
-        // 0x02c: and x12, x1, x2
-        mem[11] = 32'h0020F633;
-
-        // =========================================================
-        // INTEGER IMMEDIATE
-        // =========================================================
-
-        // 0x030: slti x13, x2, -2
-        mem[12] = 32'hFFE12693;
-
-        // 0x034: sltiu x14, x2, 2
-        mem[13] = 32'h00213713;
-
-        // 0x038: xori x15, x1, 0x55
-        mem[14] = 32'h0550C793;
-
-        // 0x03c: ori x16, x1, 0x30
-        mem[15] = 32'h0300E813;
-
-        // 0x040: andi x17, x1, 7
-        mem[16] = 32'h0070F893;
-
-        // 0x044: slli x18, x1, 2
-        mem[17] = 32'h00209913;
-
-        // 0x048: srli x19, x1, 1
-        mem[18] = 32'h0010D993;
-
-        // 0x04c: srai x20, x2, 1
-        mem[19] = 32'h40115A13;
-
-        // =========================================================
-        // RV64I W-INSTRUCTIONS
-        // =========================================================
-
-        // 0x050: addiw x21, x1, 7
-        mem[20] = 32'h00708A9B;
-
-        // 0x054: slliw x22, x1, 2
-        mem[21] = 32'h00209B1B;
-
-        // 0x058: srliw x23, x1, 1
-        mem[22] = 32'h0010DB9B;
-
-        // 0x05c: sraiw x24, x2, 1
-        mem[23] = 32'h40115C1B;
-
-        // 0x060: addw x25, x1, x2
-        mem[24] = 32'h00208CBB;
-
-        // 0x064: subw x26, x1, x2
-        mem[25] = 32'h40208D3B;
-
-        // 0x068: sllw x27, x1, x2
-        mem[26] = 32'h00209DBB;
-
-        // 0x06c: srlw x28, x1, x2
-        mem[27] = 32'h0020DE3B;
-
-        // 0x070: sraw x29, x2, x1
-        mem[28] = 32'h40115EBB;
-
-        // =========================================================
-        // LUI / AUIPC
-        // =========================================================
-
-        // 0x074: lui x30, 0x12345
-        mem[29] = 32'h12345F37;
-
-        // 0x078: auipc x31, 0
-        mem[30] = 32'h00000F97;
-
-        // =========================================================
-        // STORE
-        // =========================================================
-
-        // 0x07c: sb x1, 64(x0)
-        mem[31] = 32'h04100023;
-
-        // 0x080: sh x2, 72(x0)
-        mem[32] = 32'h04201423;
-
-        // 0x084: sw x3, 80(x0)
-        mem[33] = 32'h04302823;
-
-        // 0x088: sd x4, 88(x0)
-        mem[34] = 32'h04403C23;
-
-        // =========================================================
-        // LOAD
-        // =========================================================
-
-        // 0x08c: lb x1, 64(x0)
-        mem[35] = 32'h04000083;
-
-        // 0x090: lh x2, 72(x0)
-        mem[36] = 32'h04801103;
-
-        // 0x094: lw x3, 80(x0)
-        mem[37] = 32'h05002183;
-
-        // 0x098: ld x4, 88(x0)
-        mem[38] = 32'h05803203;
-
-        // 0x09c: lbu x5, 64(x0)
-        mem[39] = 32'h04004283;
-
-        // 0x0a0: lhu x6, 72(x0)
-        mem[40] = 32'h04805303;
-
-        // 0x0a4: lwu x7, 80(x0)
-        mem[41] = 32'h05006383;
-
-        // =========================================================
-        // BRANCH
-        // =========================================================
-
-        // 0x0a8: beq x1,x1,+8
-        // skip next instruction
-        mem[42] = 32'h00108463;
-
-        // skipped
-        // addi x20,x0,111
-        mem[43] = 32'h06F00A13;
-
-        // 0x0b0: bne x1,x2,+8
-        mem[44] = 32'h00209463;
-
-        // skipped
-        mem[45] = 32'h0DE00A13;
-
-        // 0x0b8: blt x2,x1,+8
-        mem[46] = 32'h00114463;
-
-        // skipped
-        mem[47] = 32'h14D00A13;
-
-        // 0x0c0: bge x1,x2,+8
-        mem[48] = 32'h0020D463;
-
-        // skipped
-        mem[49] = 32'h1BC00A13;
-
-        // 0x0c8: bltu x2,x1,+8
-        // NOT TAKEN
-        mem[50] = 32'h00116463;
-
-        // 0x0cc: executed
-        mem[51] = 32'h22B00A13;
-
-        // 0x0d0: bgeu x2,x1,+8  (taken -> 0x0d8)
-        mem[52] = 32'h00117463;
-
-        // skipped
-        mem[53] = 32'h29A00A13;
-
-        // =========================================================
-        // JAL
-        // =========================================================
-
-        // 0x0d8: jal x21,+8   (target 0x0e0)
-        mem[54] = 32'h00800AEF;
-
-        // 0x0dc: skipped
-        mem[55] = 32'h30900A93;
-
-        // =========================================================
-        // JALR
-        // =========================================================
-
-        // 0x0e0: auipc x22,0            -> x22 = 0x0e0
-        mem[56] = 32'h00000B17;
-
-        // 0x0e4: addi x22,x22,16        -> x22 = 0x0f0 (address of the jalr target)
-        //   FIX: was 32'h008B0B13 (imm=8 -> x22=0x0e8 = the jalr itself,
-        //   which made the CPU jump to itself forever)
-        mem[57] = 32'h010B0B13;
-
-        // 0x0e8: jalr x23,x22,0         -> x23 = 0x0ec, PC = 0x0f0
-        mem[58] = 32'h000B0BE7;
-
-        // 0x0ec: skipped
-        mem[59] = 32'h37800C13;
-
-        // 0x0f0: jalr target: addi x25,x0,0x3e7 (x25 is overwritten later by the M tests)
-        mem[60] = 32'h3E700C93;
-
-        // =========================================================
-        // RV64M TESTS  (x1 = -7, x2 = 3 unless noted)
-        // =========================================================
-
-        // 0x0f4: addi x1, x0, -7
-        //        expect x1 = -7
-        mem[61] = 32'hFF900093;
-
-        // 0x0f8: addi x2, x0, 3
-        //        expect x2 = 3
-        mem[62] = 32'h00300113;
-
-        // 0x0fc: mul   x3, x1, x2
-        //        expect x3 = 0xffffffffffffffeb
-        mem[63] = 32'h022081B3;
-
-        // 0x100: mulh  x4, x1, x2
-        //        expect x4 = 0xffffffffffffffff
-        mem[64] = 32'h02209233;
-
-        // 0x104: mulhsu x5, x1, x2
-        //        expect x5 = 0xffffffffffffffff
-        mem[65] = 32'h0220A2B3;
-
-        // 0x108: mulhu x6, x1, x2
-        //        expect x6 = 0x0000000000000002
-        mem[66] = 32'h0220B333;
-
-        // 0x10c: div   x7, x1, x2
-        //        expect x7 = 0xfffffffffffffffe
-        mem[67] = 32'h0220C3B3;
-
-        // 0x110: divu  x8, x1, x2
-        //        expect x8 = 0x5555555555555553
-        mem[68] = 32'h0220D433;
-
-        // 0x114: rem   x9, x1, x2
-        //        expect x9 = 0xffffffffffffffff
-        mem[69] = 32'h0220E4B3;
-
-        // 0x118: remu  x10, x1, x2
-        //        expect x10 = 0x0000000000000000
-        mem[70] = 32'h0220F533;
-
-        // 0x11c: div   x11, x1, x0
-        //        expect x11 = 0xffffffffffffffff  (div by 0 -> -1)
-        mem[71] = 32'h0200C5B3;
-
-        // 0x120: divu  x12, x1, x0
-        //        expect x12 = 0xffffffffffffffff  (divu by 0 -> all ones)
-        mem[72] = 32'h0200D633;
-
-        // 0x124: rem   x13, x1, x0
-        //        expect x13 = 0xfffffffffffffff9  (rem by 0 -> dividend)
-        mem[73] = 32'h0200E6B3;
-
-        // 0x128: remu  x14, x1, x0
-        //        expect x14 = 0xfffffffffffffff9  (remu by 0 -> dividend)
-        mem[74] = 32'h0200F733;
-
-        // 0x12c: addi  x15, x0, 1
-        mem[75] = 32'h00100793;
-
-        // 0x130: slli  x15, x15, 63
-        //        expect x15 = 0x8000000000000000
-        mem[76] = 32'h03F79793;
-
-        // 0x134: addi  x16, x0, -1
-        mem[77] = 32'hFFF00813;
-
-        // 0x138: div   x17, x15, x16
-        //        expect x17 = 0x8000000000000000  (overflow -> dividend)
-        mem[78] = 32'h0307C8B3;
-
-        // 0x13c: rem   x18, x15, x16
-        //        expect x18 = 0            (overflow -> 0)
-        mem[79] = 32'h0307E933;
-
-        // 0x140: mulw  x19, x1, x2
-        //        expect x19 = 0xffffffffffffffeb
-        mem[80] = 32'h022089BB;
-
-        // 0x144: divw  x20, x1, x2
-        //        expect x20 = 0xfffffffffffffffe
-        mem[81] = 32'h0220CA3B;
-
-        // 0x148: divuw x21, x1, x2
-        //        expect x21 = 0x0000000055555553
-        mem[82] = 32'h0220DABB;
-
-        // 0x14c: remw  x22, x1, x2
-        //        expect x22 = 0xffffffffffffffff
-        mem[83] = 32'h0220EB3B;
-
-        // 0x150: remuw x23, x1, x2
-        //        expect x23 = 0x0000000000000000
-        mem[84] = 32'h0220FBBB;
-
-        // 0x154: mul   x24, x3, x2
-        //        expect x24 = 0xffffffffffffffc1  (uses x3 from mul above)
-        mem[85] = 32'h02218C33;
-
-        // 0x158: add   x25, x24, x2
-        //        expect x25 = 0xffffffffffffffc4  (consumes MDU result right after it)
-        mem[86] = 32'h002C0CB3;
-
-        // =========================================================
-        // END: infinite loop
-        // =========================================================
-
-        // 0x15c: jal x0, 0
-        mem[87] = 32'h0000006F;
+        // ===== C.LI / C.ADD / C.MV / C.ADDI / C.ADDIW / C.SLLI =====
+        // 0x000: c.li x1, 5                 -> x1 = 5
+        mem[0]  = 16'h4095;
+        // 0x002: c.li x2, -3                -> x2 = -3
+        mem[1]  = 16'h5175;
+        // 0x004: c.add x1, x2               -> x1 = 2
+        mem[2]  = 16'h908A;
+        // 0x006: c.mv x3, x1                -> x3 = 2
+        mem[3]  = 16'h8186;
+        // 0x008: c.addi x3, 10              -> x3 = 12
+        mem[4]  = 16'h01A9;
+        // 0x00a: c.addiw x3, -1             -> x3 = 11
+        mem[5]  = 16'h31FD;
+        // 0x00c: c.slli x3, 4               -> x3 = 0xb0
+        mem[6]  = 16'h0192;
+
+        // ===== C.LUI =====
+        // 0x00e: c.lui x4, 1                -> x4 = 0x1000
+        mem[7]  = 16'h6205;
+        // 0x010: c.lui x5, -1 (0xfffff)     -> x5 = 0xfffffffffffff000
+        mem[8]  = 16'h72FD;
+
+        // ===== C.ADDI16SP / C.ADDI4SPN (sp = x2) =====
+        // 0x012: c.li x2, 16                -> x2 = 0x10
+        mem[9]  = 16'h4141;
+        // 0x014: c.slli x2, 4               -> x2 = 0x100
+        mem[10] = 16'h0112;
+        // 0x016: c.addi16sp sp, 64          -> x2 = 0x140
+        mem[11] = 16'h6121;
+        // 0x018: c.addi16sp sp, -32         -> x2 = 0x120
+        mem[12] = 16'h713D;
+        // 0x01a: c.addi4spn x8, sp, 16      -> x8 = 0x130
+        mem[13] = 16'h0800;
+
+        // ===== C.SD / C.SW / C.LD / C.LW (base x8 = 0x130) =====
+        // 0x01c: c.li x9, 21                -> x9 = 0x15
+        mem[14] = 16'h44D5;
+        // 0x01e: c.sd x9, 0(x8)             -> mem64[0x130] = 0x15
+        mem[15] = 16'hE004;
+        // 0x020: c.sw x9, 8(x8)             -> mem32[0x138] = 0x15
+        mem[16] = 16'hC404;
+        // 0x022: c.ld x10, 0(x8)            -> x10 = 0x15
+        mem[17] = 16'h6008;
+        // 0x024: c.lw x11, 8(x8)            -> x11 = 0x15
+        mem[18] = 16'h440C;
+        // 0x026: c.li x12, -2               -> x12 = 0xfffffffffffffffe
+        mem[19] = 16'h5679;
+        // 0x028: c.sw x12, 16(x8)           -> mem32[0x140] = 0xfffffffe
+        mem[20] = 16'hC810;
+        // 0x02a: c.lw x13, 16(x8)           -> x13 = 0xfffffffffffffffe (sign-extended)
+        mem[21] = 16'h4814;
+
+        // ===== C.SDSP / C.LDSP / C.SWSP / C.LWSP (sp = 0x120) =====
+        // 0x02c: c.sdsp x9, 8(sp)           -> mem64[0x128] = 0x15
+        mem[22] = 16'hE426;
+        // 0x02e: c.ldsp x14, 8(sp)          -> x14 = 0x15
+        mem[23] = 16'h6722;
+        // 0x030: c.swsp x12, 16(sp)         -> mem32[0x130] = 0xfffffffe
+        mem[24] = 16'hC832;
+        // 0x032: c.lwsp x15, 16(sp)         -> x15 = 0xfffffffffffffffe
+        mem[25] = 16'h47C2;
+
+        // ===== C.SUB / C.XOR / C.OR / C.AND / C.ADDW / C.SUBW =====
+        // 0x034: c.li x8, 12                -> x8 = 12
+        mem[26] = 16'h4431;
+        // 0x036: c.li x9, 10                -> x9 = 10
+        mem[27] = 16'h44A9;
+        // 0x038: c.sub x8, x9               -> x8 = 2
+        mem[28] = 16'h8C05;
+        // 0x03a: c.xor x8, x9               -> x8 = 8
+        mem[29] = 16'h8C25;
+        // 0x03c: c.or x8, x9                -> x8 = 10
+        mem[30] = 16'h8C45;
+        // 0x03e: c.li x8, 12                -> x8 = 12
+        mem[31] = 16'h4431;
+        // 0x040: c.and x8, x9               -> x8 = 8
+        mem[32] = 16'h8C65;
+        // 0x042: c.addw x8, x9              -> x8 = 18
+        mem[33] = 16'h9C25;
+        // 0x044: c.subw x8, x9              -> x8 = 8
+        mem[34] = 16'h9C05;
+
+        // ===== C.SRLI / C.SRAI / C.ANDI =====
+        // 0x046: c.srli x8, 1               -> x8 = 4
+        mem[35] = 16'h8005;
+        // 0x048: c.srai x12, 1              -> x12 = 0xffffffffffffffff
+        mem[36] = 16'h8605;
+        // 0x04a: c.andi x9, -4              -> x9 = 8
+        mem[37] = 16'h98F1;
+
+        // ===== C.NOP + 32-BIT INSTR AT 2-BYTE ALIGNMENT =====
+        // 0x04c: c.nop
+        mem[38] = 16'h0001;
+        // 0x04e: addi x16, x0, 0x123        -> x16 = 0x123 (0x12300813, straddles word boundary)
+        mem[39] = 16'h0813;
+        mem[40] = 16'h1230;
+        // 0x052: c.addi x16, 1              -> x16 = 0x124
+        mem[41] = 16'h0805;
+
+        // ===== C.BEQZ / C.BNEZ (forward) =====
+        // 0x054: c.beqz x8, +4              (x8 = 4 -> NOT taken)
+        mem[42] = 16'hC011;
+        // 0x056: c.li x17, 1                -> executed, x17 = 1
+        mem[43] = 16'h4885;
+        // 0x058: c.bnez x8, +4              (taken -> 0x05c)
+        mem[44] = 16'hE011;
+        // 0x05a: c.li x18, 15               -> SKIPPED, x18 = 0
+        mem[45] = 16'h493D;
+        // 0x05c: c.li x19, 7                -> x19 = 7
+        mem[46] = 16'h499D;
+
+        // ===== C.J =====
+        // 0x05e: c.j +6                     (-> 0x064)
+        mem[47] = 16'hA019;
+        // 0x060: c.li x20, 15               -> SKIPPED, x20 = 0
+        mem[48] = 16'h4A3D;
+        // 0x062: c.li x21, 15               -> SKIPPED, x21 = 0
+        mem[49] = 16'h4ABD;
+        // 0x064: c.li x22, 9                -> x22 = 9
+        mem[50] = 16'h4B25;
+
+        // ===== C.JALR (link must be PC+2) =====
+        // 0x066: auipc x24, 0               -> x24 = 0x066 (32-bit at 2-byte alignment)
+        mem[51] = 16'h0C17;
+        mem[52] = 16'h0000;
+        // 0x06a: c.addi x24, 12             -> x24 = 0x072
+        mem[53] = 16'h0C31;
+        // 0x06c: c.jalr x24                 -> x1 = 0x06e, PC = 0x072
+        mem[54] = 16'h9C02;
+        // 0x06e: addi x25, x0, 0x7b         -> SKIPPED (32-bit, straddles word boundary)
+        mem[55] = 16'h0C93;
+        mem[56] = 16'h07B0;
+        // 0x072: c.mv x25, x1               -> x25 = 0x06e
+        mem[57] = 16'h8C86;
+
+        // ===== C.JR =====
+        // 0x074: auipc x26, 0               -> x26 = 0x074
+        mem[58] = 16'h0D17;
+        mem[59] = 16'h0000;
+        // 0x078: c.addi x26, 10             -> x26 = 0x07e
+        mem[60] = 16'h0D29;
+        // 0x07a: c.jr x26                   -> PC = 0x07e
+        mem[61] = 16'h8D02;
+        // 0x07c: c.li x27, 15               -> SKIPPED, x27 = 0
+        mem[62] = 16'h4DBD;
+        // 0x07e: c.li x28, 3                -> x28 = 3
+        mem[63] = 16'h4E0D;
+
+        // ===== MIXED 16/32-BIT WITH M-EXT + FORWARDING =====
+        // 0x080: mul x29, x8, x9            -> x29 = 32 (x8 = 4, x9 = 8)
+        mem[64] = 16'h0EB3;
+        mem[65] = 16'h0294;
+        // 0x084: c.add x29, x8              -> x29 = 36 (consumes MDU result)
+        mem[66] = 16'h9EA2;
+        // 0x086: div x30, x29, x8           -> x30 = 9 (32-bit at 2-byte alignment)
+        mem[67] = 16'hCF33;
+        mem[68] = 16'h028E;
+        // 0x08a: c.add x30, x30             -> x30 = 18 (consumes MDU result)
+        mem[69] = 16'h9F7A;
+
+        // ===== LOAD-USE HAZARD WITH C INSTRS =====
+        // 0x08c: c.ldsp x10, 8(sp)          -> x10 = 0x15
+        mem[70] = 16'h6522;
+        // 0x08e: c.add x10, x10             -> x10 = 0x2a (needs load-use stall)
+        mem[71] = 16'h952A;
+
+        // ===== C.BEQZ TAKEN / C.BNEZ NOT TAKEN =====
+        // 0x090: c.li x8, 0                 -> x8 = 0
+        mem[72] = 16'h4401;
+        // 0x092: c.beqz x8, +4              (taken -> 0x096)
+        mem[73] = 16'hC011;
+        // 0x094: c.li x31, 15               -> SKIPPED
+        mem[74] = 16'h4FBD;
+        // 0x096: c.bnez x8, +4              (NOT taken)
+        mem[75] = 16'hE011;
+        // 0x098: c.li x31, 21               -> x31 = 21
+        mem[76] = 16'h4FD5;
+
+        // ===== BACKWARD C.BNEZ LOOP =====
+        // 0x09a: c.li x8, 3
+        mem[77] = 16'h440D;
+        // 0x09c: c.li x9, 0
+        mem[78] = 16'h4481;
+        // 0x09e: c.addi x9, 1               (loop body)
+        mem[79] = 16'h0485;
+        // 0x0a0: c.addi x8, -1
+        mem[80] = 16'h147D;
+        // 0x0a2: c.bnez x8, -4              (-> 0x09e; ends with x8 = 0, x9 = 3)
+        mem[81] = 16'hFC75;
+
+        // ===== END: infinite loop =====
+        // 0x0a4: c.j 0
+        mem[82] = 16'hA001;
 
     end
 
-    // PC is byte address
-    assign instr = mem[addr[11:2]];
+    // PC is a byte address; fetch two consecutive 16-bit parcels.
+    // If instr[1:0] != 2'b11, only instr[15:0] is valid (compressed).
+    logic [10:0] a;
+    assign a     = addr[11:1];
+    assign instr = {mem[a + 11'd1], mem[a]};
 
 endmodule

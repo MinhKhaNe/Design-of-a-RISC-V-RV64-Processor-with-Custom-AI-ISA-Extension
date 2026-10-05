@@ -1,8 +1,23 @@
 package rv64im_pkg;
 
-  // ---------------------------------------------------------------------
+  // Opcodes actually used below (RV64I base only)
+  localparam logic [6:0] OP_LUI      = 7'b0110111;
+  localparam logic [6:0] OP_AUIPC    = 7'b0010111;
+  localparam logic [6:0] OP_JAL      = 7'b1101111;
+  localparam logic [6:0] OP_JALR     = 7'b1100111;
+  localparam logic [6:0] OP_BRANCH   = 7'b1100011;
+  localparam logic [6:0] OP_LOAD     = 7'b0000011;
+  localparam logic [6:0] OP_STORE    = 7'b0100011;
+  localparam logic [6:0] OP_IMM      = 7'b0010011;
+  localparam logic [6:0] OP_IMM_32   = 7'b0011011;
+  localparam logic [6:0] OP_REG      = 7'b0110011;
+  localparam logic [6:0] OP_REG_32   = 7'b0111011;
+  localparam logic [6:0] OP_SYSTEM   = 7'b1110011;
+
+  // funct7 pattern that marks an RV64M instruction inside OP_REG / OP_REG_32
+  localparam logic [6:0] FUNCT7_MEXT = 7'b0000001;
+
   // Immediate format selector (feeds imm_gen)
-  // ---------------------------------------------------------------------
   typedef enum logic [2:0] {
     IMM_I = 3'b000,
     IMM_S = 3'b001,
@@ -12,9 +27,7 @@ package rv64im_pkg;
     IMM_X = 3'b111   // don't-care (e.g. R-type has no immediate)
   } imm_type_e;
 
-  // ---------------------------------------------------------------------
   // ALU operation selector
-  // ---------------------------------------------------------------------
   typedef enum logic [3:0] {
     ALU_ADD  = 4'd0,
     ALU_SUB  = 4'd1,
@@ -46,10 +59,7 @@ package rv64im_pkg;
     ALU_B_IMM = 1'b1   // decoded immediate
   } alu_b_sel_e;
 
-  // ---------------------------------------------------------------------
   // RV64M: multiply operation selector
-  // (word (*W) variant folded in, same pattern as ALU_ADDW/etc above)
-  // ---------------------------------------------------------------------
   typedef enum logic [2:0] {
     MUL_MUL    = 3'b000,  // low 64 bits of rs1*rs2
     MUL_MULH   = 3'b001,  // high 64 bits, signed x signed
@@ -58,11 +68,7 @@ package rv64im_pkg;
     MUL_MULW   = 3'b100   // low 32 bits of rs1[31:0]*rs2[31:0], sign-extended
   } mul_op_e;
 
-  // ---------------------------------------------------------------------
   // RV64M: divide/remainder operation selector
-  // (word (*W) variants included; each is a normal signed/unsigned
-  // op operating on the low 32 bits, sign-extended to 64 at the end)
-  // ---------------------------------------------------------------------
   typedef enum logic [2:0] {
     DIV_DIV    = 3'b000,
     DIV_DIVU   = 3'b001,
@@ -103,22 +109,5 @@ package rv64im_pkg;
     MEM_HU = 3'b101,
     MEM_WU = 3'b110
   } mem_width_e;
-
-  // Opcodes actually used below (RV64I base only)
-  localparam logic [6:0] OP_LUI      = 7'b0110111;
-  localparam logic [6:0] OP_AUIPC    = 7'b0010111;
-  localparam logic [6:0] OP_JAL      = 7'b1101111;
-  localparam logic [6:0] OP_JALR     = 7'b1100111;
-  localparam logic [6:0] OP_BRANCH   = 7'b1100011;
-  localparam logic [6:0] OP_LOAD     = 7'b0000011;
-  localparam logic [6:0] OP_STORE    = 7'b0100011;
-  localparam logic [6:0] OP_IMM      = 7'b0010011;
-  localparam logic [6:0] OP_IMM_32   = 7'b0011011;
-  localparam logic [6:0] OP_REG      = 7'b0110011;
-  localparam logic [6:0] OP_REG_32   = 7'b0111011;
-  localparam logic [6:0] OP_SYSTEM   = 7'b1110011;
-
-  // funct7 pattern that marks an RV64M instruction inside OP_REG / OP_REG_32
-  localparam logic [6:0] FUNCT7_MEXT = 7'b0000001;
 
 endpackage
