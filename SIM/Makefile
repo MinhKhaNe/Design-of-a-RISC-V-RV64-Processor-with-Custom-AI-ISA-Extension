@@ -4,7 +4,7 @@ VLIB = vlib
 VMAP = vmap
 
 WORK = work
-TOP  = tb_pipeline
+TOP  = tb_rv64imafc
 
 RTL_F    = rtl.f
 TB_SRC   = ../TB/$(TOP).sv

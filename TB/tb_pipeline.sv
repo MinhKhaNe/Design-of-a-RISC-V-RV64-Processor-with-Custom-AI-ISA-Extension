@@ -9,7 +9,7 @@ module tb_pipeline;
     // DUT
     // =========================================================
 
-    rv64im_top #(
+    rv64imafc_top #(
         .RESET_PC(64'h0),
         .TRAP_PC (64'h000004e0)
     ) dut (
@@ -96,17 +96,18 @@ module tb_pipeline;
         end
     end
 
-    // =========================================================
-    // STOP
-    // =========================================================
-
     initial begin
-        #3000;
+        #1700;
 
         $display("");
         $display("============================================================");
         $display(" SIMULATION FINISHED");
         $display("============================================================");
+        for(int i = 0; i < 32; i++) begin
+            $display("x%0d = 0x%h", i, dut.regfile_inst.regs[i]);
+        end
+
+        //$display("x31=%0d x30=0x%h x4=0x%h", dut.regfile_inst.regs[31], dut.regfile_inst.regs[30], dut.regfile_inst.regs[4]);
 
         $finish;
     end

@@ -1,6 +1,14 @@
 +incdir+../RTL
 
-../RTL/rv64im_pkg.sv
+../RTL/rv64imafc_pkg.sv
+../RTL/amo_alu.sv
+../RTL/zicntr.sv
+../RTL/fp_round.sv
+../RTL/fp_regfile.sv
+../RTL/fp_forward_unit.sv
+../RTL/fcsr.sv
+../RTL/fpu.sv
+../RTL/fp_unpack.sv
 ../RTL/regfile.sv
 ../RTL/forward_unit.sv
 ../RTL/hazard_unit.sv
@@ -11,4 +19,5 @@
 ../RTL/decoder.sv
 ../RTL/branch_comp.sv
 ../RTL/mul_div_unit.sv
-../RTL/rv64im_top.sv
+../RTL/c_expander.sv
+../RTL/rv64imafc_top.sv

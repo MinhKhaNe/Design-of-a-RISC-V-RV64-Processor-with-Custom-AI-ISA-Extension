@@ -25,7 +25,7 @@ module tb_rv64im;
   // ------------------------------------------------------------------
   // DUT
   // ------------------------------------------------------------------
-  rv64im_top #(
+  rv64imafc_top #(
       .RESET_PC (RESET_PC),
       .TRAP_PC  (TRAP_PC)
   ) dut (
@@ -134,15 +134,13 @@ module tb_rv64im;
   // Preload imem: backdoor byte-wise write into imem_inst.mem
   // (little-endian, matching imem.sv's own byte assembly)
   // ------------------------------------------------------------------
-  initial begin
-    int i;
-    for (i = 0; i < NUM_WORDS; i++) begin
-      dut.imem_inst.mem[i*4 + 0] = program_mem[i][7:0];
-      dut.imem_inst.mem[i*4 + 1] = program_mem[i][15:8];
-      dut.imem_inst.mem[i*4 + 2] = program_mem[i][23:16];
-      dut.imem_inst.mem[i*4 + 3] = program_mem[i][31:24];
-    end
+initial begin
+  int i;
+  for (i = 0; i < NUM_WORDS; i++) begin
+    dut.imem_inst.mem[2*i + 0] = program_mem[i][15:0];
+    dut.imem_inst.mem[2*i + 1] = program_mem[i][31:16];
   end
+end
 
   // ------------------------------------------------------------------
   // illegal_instr_o bookkeeping: this program_mem deliberately executes
@@ -253,6 +251,10 @@ module tb_rv64im;
       $fatal(1);
     end
   end
+
+  always @(posedge clk)
+  if (dut.illegal_instr_o)
+    $display("[%0t] ILLEGAL: idex_pc=%h", $time, dut.idex_pc);
 
   // ------------------------------------------------------------------
   // Reference table: test_names[i] is the (i+1)-th self-check emitted
