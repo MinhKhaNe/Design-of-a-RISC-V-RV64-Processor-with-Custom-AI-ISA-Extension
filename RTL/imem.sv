@@ -1,11 +1,21 @@
-module imem (
+module imem #(
+    parameter int    MEM_BYTES = 4096,
+    parameter string INIT_FILE = ""
+) (
     input  logic [63:0] addr,
     output logic [31:0] instr
 );
 
-    logic [15:0] mem [0:2047];
+    localparam int AW = $clog2(MEM_BYTES);           // byte-address bits
+    localparam int NW = MEM_BYTES / 2;               // number of 16-bit parcels
+
+    logic [15:0] mem [0:NW-1];
 
     initial begin
+      for (int i = 0; i < NW; i++) mem[i] = 16'h0001;   // c.nop: harmless wrong-path fetches
+      if (INIT_FILE != "") begin
+        $readmemh(INIT_FILE, mem);
+      end else begin
 
         // ===== C.LI / C.ADD / C.MV / C.ADDI / C.ADDIW / C.SLLI =====
         // 0x000: c.li x1, 5                 -> x1 = 5
@@ -201,12 +211,14 @@ module imem (
         // 0x0a4: c.j 0
         mem[82] = 16'hA001;
 
+      end
     end
 
     // PC is a byte address; fetch two consecutive 16-bit parcels.
     // If instr[1:0] != 2'b11, only instr[15:0] is valid (compressed).
-    logic [10:0] a;
-    assign a     = addr[11:1];
-    assign instr = {mem[a + 11'd1], mem[a]};
+    logic [AW-2:0] a, a1;
+    assign a     = addr[AW-1:1];
+    assign a1    = a + 1'b1;                         // wraps inside the memory
+    assign instr = {mem[a1], mem[a]};
 
 endmodule

@@ -1,4 +1,4 @@
-import rv64im_pkg::*;
+import rv64imafc_pkg::*;
 
 module branch_comp (
     input  branch_type_e branch_type,

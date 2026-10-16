@@ -132,7 +132,7 @@ module c_expander (
               nzimm6 = {instr16[12], instr16[6:2]};
               imm20  = {{14{nzimm6[5]}}, nzimm6};
               instr32 = enc_u(imm20, rd_rs1_5, OP_LUI);
-              if (nzimm6 == 6'b0 || rd_rs1_5 == 5'd0) c_illegal = 1'b1;  // reserved
+              if (nzimm6 == 6'b0) c_illegal = 1'b1;  // reserved
             end
           end
           3'b100: begin // MISC-ALU
@@ -244,7 +244,6 @@ module c_expander (
           end
         endcase
       end
-      
       2'b11: begin
         c_illegal = 1'b1;
       end

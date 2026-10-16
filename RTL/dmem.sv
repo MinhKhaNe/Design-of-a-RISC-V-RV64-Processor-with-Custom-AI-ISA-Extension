@@ -1,7 +1,8 @@
-import rv64im_pkg::*;
+import rv64imafc_pkg::*;
 
 module dmem #(
-    parameter int MEM_BYTES = 4096
+    parameter int    MEM_BYTES = 4096,
+    parameter string INIT_FILE = ""
 ) (
     input  logic         clk,
     input  logic [63:0]  addr,
@@ -11,12 +12,19 @@ module dmem #(
     output logic [63:0]  rdata
 );
 
+  localparam int AW = $clog2(MEM_BYTES);
+
   logic [7:0]  mem [0:MEM_BYTES-1];
   logic [3:0]  nbytes;
   logic [63:0] raw;
-  logic [11:0] a;   // truncated address into this local memory
+  logic [AW-1:0] a;   // address truncated to this memory's size (upper bits ignored)
 
-  assign a = addr[11:0];
+  assign a = addr[AW-1:0];
+
+  initial begin
+    for (int i = 0; i < MEM_BYTES; i++) mem[i] = 8'h00;
+    if (INIT_FILE != "") $readmemh(INIT_FILE, mem);
+  end
 
   always_comb begin
     case (width)
@@ -28,11 +36,12 @@ module dmem #(
     endcase
   end
 
-  // synchronous write
-  always_ff @(posedge clk) begin
+  // synchronous write (plain 'always': the array is also written by the initial block above,
+  // which always_ff would forbid)
+  always @(posedge clk) begin
     if (mem_write) begin
       for (int i = 0; i < 8; i++) begin
-        if (i < nbytes) mem[a + i[11:0]] <= wdata[8*i +: 8];
+        if (i < nbytes) mem[a + AW'(i)] <= wdata[8*i +: 8];
       end
     end
   end
@@ -41,7 +50,7 @@ module dmem #(
   always_comb begin
     raw = 64'b0;
     for (int i = 0; i < 8; i++) begin
-      if (i < nbytes) raw[8*i +: 8] = mem[a + i[11:0]];
+      if (i < nbytes) raw[8*i +: 8] = mem[a + AW'(i)];
     end
     case (width)
       MEM_B:  rdata = {{56{raw[7]}},  raw[7:0]};

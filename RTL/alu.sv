@@ -1,4 +1,4 @@
-import rv64im_pkg::*;
+import rv64imafc_pkg::*;
 
 module alu (
     input  alu_op_e     alu_op,

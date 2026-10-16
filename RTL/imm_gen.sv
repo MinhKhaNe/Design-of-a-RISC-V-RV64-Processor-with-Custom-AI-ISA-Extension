@@ -1,4 +1,4 @@
-import rv64im_pkg::*;
+import rv64imafc_pkg::*;
 
 module imm_gen (
     input  logic [31:0] instr,
