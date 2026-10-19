@@ -73,7 +73,7 @@ module c_expander (
           3'b000: begin // C.ADDI4SPN -> addi rd', x2, nzuimm
             logic [9:0] nzuimm;
             nzuimm = {instr16[10:7], instr16[12:11], instr16[5], instr16[6], 2'b00};
-            instr32 = enc_i(nzuimm[9:0], 5'd2, 3'b000, creg(rd_rs1_3), OP_IMM);
+            instr32 = enc_i(nzuimm[9:0], 5'd2, 3'b000, creg(rs2_3), OP_IMM);
             if (nzuimm == 10'b0) c_illegal = 1'b1;   // reserved (also catches all-zero instr16)
           end
           3'b010: begin // C.LW -> lw rd', offset(rs1')

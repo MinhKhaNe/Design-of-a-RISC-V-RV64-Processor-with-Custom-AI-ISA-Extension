@@ -176,7 +176,10 @@ module rv64imafc_top #(
   assign csr_we           = idex_valid && csr_wr_req && !ex_illegal && csr_hit;
   assign ex_retire        = idex_valid && !ex_busy && !ex_illegal;
 
-  imem imem_inst (
+  imem #(
+      .MEM_BYTES (IMEM_BYTES),
+      .INIT_FILE (IMEM_INIT)
+  ) imem_inst (
       .addr  (pc),
       .instr (if_instr)
   );
@@ -600,7 +603,10 @@ module rv64imafc_top #(
     end
   end
 
-  dmem dmem_inst (
+  dmem #(
+      .MEM_BYTES (DMEM_BYTES),
+      .INIT_FILE (DMEM_INIT)
+  ) dmem_inst (
       .clk       (clk),
       .addr      (exmem_alu_result),
       .wdata     (mem_wdata),
@@ -608,6 +614,7 @@ module rv64imafc_top #(
       .width     (exmem_mem_width),
       .rdata     (mem_rdata)
   );
+  
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       memwb_valid         <= 1'b0;  
