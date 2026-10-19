@@ -1,5 +1,5 @@
 # vsim -c tb_rv64imafc -voptargs="+acc" -do "run -all; quit" 
-# Start time: 09:53:33 on Oct 16,2026
+# Start time: 19:37:01 on Oct 18,2026
 # ** Note: (vsim-3812) Design is being optimized...
 # ** Note: (vopt-143) Recognized 1 FSM in module "fpu(fast)".
 # ** Note: (vopt-143) Recognized 1 FSM in module "mul_div_unit(fast)".
@@ -56,5 +56,5 @@
 # ------------------------------------------------------------------
 # ** Note: $finish    : ../TB/tb_rv64imafc.sv(1574)
 #    Time: 1121305 ns  Iteration: 1  Instance: /tb_rv64imafc
-# End time: 09:53:37 on Oct 16,2026, Elapsed time: 0:00:04
+# End time: 19:37:02 on Oct 18,2026, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 0

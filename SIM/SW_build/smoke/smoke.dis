@@ -1,0 +1,108 @@
+
+SW_build/smoke/smoke.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	00011197          	auipc	gp,0x11
+   4:	81018193          	addi	gp,gp,-2032 # 10810 <__global_pointer$>
+   8:	00020117          	auipc	sp,0x20
+   c:	ef810113          	addi	sp,sp,-264 # 1ff00 <_mailbox>
+  10:	00010517          	auipc	a0,0x10
+  14:	00050513          	addi	a0,a0,0 # 10010 <buf>
+  18:	84018593          	addi	a1,gp,-1984 # 10050 <__bss_end>
+  1c:	00b57663          	bgeu	a0,a1,28 <_start+0x28>
+  20:	00053023          	sd	zero,0(a0)
+  24:	0521                	c.addi	a0,8
+  26:	bfdd                	c.j	1c <_start+0x1c>
+  28:	08a000ef          	jal	ra,b2 <main>
+  2c:	a001                	c.j	2c <_start+0x2c>
+
+000000000000002e <_trap>:
+  2e:	a001                	c.j	2e <_trap>
+
+0000000000000030 <work>:
+  30:	00010717          	auipc	a4,0x10
+  34:	fe070713          	addi	a4,a4,-32 # 10010 <buf>
+  38:	1141                	c.addi	sp,-16
+  3a:	84018613          	addi	a2,gp,-1984 # 10050 <__bss_end>
+  3e:	87ba                	c.mv	a5,a4
+  40:	4681                	c.li	a3,0
+  42:	438c                	c.lw	a1,0(a5)
+  44:	0791                	c.addi	a5,4
+  46:	8ecd                	c.or	a3,a1
+  48:	fef61de3          	bne	a2,a5,42 <work+0x12>
+  4c:	0016b693          	sltiu	a3,a3,1
+  50:	e114                	c.sd	a3,0(a0)
+  52:	4781                	c.li	a5,0
+  54:	00010697          	auipc	a3,0x10
+  58:	fbc68693          	addi	a3,a3,-68 # 10010 <buf>
+  5c:	4541                	c.li	a0,16
+  5e:	02f785bb          	mulw	a1,a5,a5
+  62:	2785                	c.addiw	a5,1
+  64:	0691                	c.addi	a3,4
+  66:	feb6ae23          	sw	a1,-4(a3)
+  6a:	fea79ae3          	bne	a5,a0,5e <work+0x2e>
+  6e:	4781                	c.li	a5,0
+  70:	4314                	c.lw	a3,0(a4)
+  72:	0711                	c.addi	a4,4
+  74:	97b6                	c.add	a5,a3
+  76:	fec71de3          	bne	a4,a2,70 <work+0x40>
+  7a:	00010717          	auipc	a4,0x10
+  7e:	f8673703          	ld	a4,-122(a4) # 10000 <__mailbox_size+0xff00>
+  82:	e43a                	c.sdsp	a4,8(sp)
+  84:	6522                	c.ldsp	a0,8(sp)
+  86:	66a2                	c.ldsp	a3,8(sp)
+  88:	000f4637          	lui	a2,0xf4
+  8c:	24360613          	addi	a2,a2,579 # f4243 <_mailbox+0xd4343>
+  90:	02c57533          	remu	a0,a0,a2
+  94:	01f00737          	lui	a4,0x1f00
+  98:	0705                	c.addi	a4,1 # 1f00001 <_mailbox+0x1ee0101>
+  9a:	0732                	c.slli	a4,0xc
+  9c:	3ba70713          	addi	a4,a4,954
+  a0:	07c2                	c.slli	a5,0x10
+  a2:	0141                	c.addi	sp,16
+  a4:	02c6d6b3          	divu	a3,a3,a2
+  a8:	1522                	c.slli	a0,0x28
+  aa:	9736                	c.add	a4,a3
+  ac:	953a                	c.add	a0,a4
+  ae:	953e                	c.add	a0,a5
+  b0:	8082                	c.jr	ra
+
+00000000000000b2 <main>:
+  b2:	7179                	c.addi16sp	sp,-48
+  b4:	f406                	c.sdsp	ra,40(sp)
+  b6:	f022                	c.sdsp	s0,32(sp)
+  b8:	ec26                	c.sdsp	s1,24(sp)
+  ba:	c00024f3          	csrrs	s1,cycle,zero
+  be:	c0202473          	csrrs	s0,instret,zero
+  c2:	0028                	c.addi4spn	a0,sp,8
+  c4:	f6dff0ef          	jal	ra,30 <work>
+  c8:	c0002773          	csrrs	a4,cycle,zero
+  cc:	c02027f3          	csrrs	a5,instret,zero
+  d0:	00020637          	lui	a2,0x20
+  d4:	8f05                	c.sub	a4,s1
+  d6:	f0e63823          	sd	a4,-240(a2) # 1ff10 <_mailbox+0x10>
+  da:	8f81                	c.sub	a5,s0
+  dc:	000206b7          	lui	a3,0x20
+  e0:	f0f6bc23          	sd	a5,-232(a3) # 1ff18 <_mailbox+0x18>
+  e4:	00020737          	lui	a4,0x20
+  e8:	f2a73023          	sd	a0,-224(a4) # 1ff20 <_mailbox+0x20>
+  ec:	000207b7          	lui	a5,0x20
+  f0:	00010597          	auipc	a1,0x10
+  f4:	f185b583          	ld	a1,-232(a1) # 10008 <__mailbox_size+0xff08>
+  f8:	f2b7b423          	sd	a1,-216(a5) # 1ff28 <_mailbox+0x28>
+  fc:	6822                	c.ldsp	a6,8(sp)
+  fe:	000207b7          	lui	a5,0x20
+ 102:	f307b823          	sd	a6,-208(a5) # 1ff30 <_mailbox+0x30>
+ 106:	00183713          	sltiu	a4,a6,1
+ 10a:	00b50363          	beq	a0,a1,110 <__mailbox_size+0x10>
+ 10e:	4705                	c.li	a4,1
+ 110:	000207b7          	lui	a5,0x20
+ 114:	f0e7b423          	sd	a4,-248(a5) # 1ff08 <_mailbox+0x8>
+ 118:	600df737          	lui	a4,0x600df
+ 11c:	000207b7          	lui	a5,0x20
+ 120:	0735                	c.addi	a4,13 # 600df00d <_mailbox+0x600bf10d>
+ 122:	f0e7b023          	sd	a4,-256(a5) # 1ff00 <_mailbox>
+ 126:	a001                	c.j	126 <__mailbox_size+0x26>
