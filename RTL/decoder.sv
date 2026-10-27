@@ -34,6 +34,9 @@ module decoder (
     output logic          uses_rm,       // funct3 is a rounding mode (resolved to frm when 111)
     output logic          fp_reg_write,  // destination is an FP register (reg_write is integer-only)
     output logic          is_csr,
+    // Xai control
+    output logic          is_ai,         // custom-0 AI instruction (result rides the ALU-result field)
+    output ai_op_e        ai_op,
 
     // RV64A control
     output logic          is_amo,        // AMOxxx.W/D: read-modify-write in MEM
@@ -82,6 +85,8 @@ module decoder (
     uses_rm       = 1'b0;
     fp_reg_write  = 1'b0;
     is_csr        = 1'b0;
+    is_ai         = 1'b0;
+    ai_op         = AI_DOT8;
     is_amo        = 1'b0;
     is_lr         = 1'b0;
     is_sc         = 1'b0;
@@ -346,6 +351,25 @@ module decoder (
           default:  illegal_instr = 1'b1;
         endcase
       end
+      // ---------------------------------------------------------------
+      // Xai (custom-0), R-type, funct3 selects the operation:
+      //   000 dot8   rd = sum of 8 signed int8 products                      funct7 = 0
+      //   001 qrelu  4 x int32 (rs1,rs2) -> 4 x int8 in rd[31:0], shift = funct7[4:0], funct7[6:5] = 0
+      //   010 max8   per-byte signed max                                     funct7 = 0
+      OP_CUSTOM0: begin
+        is_ai     = 1'b1;
+        rs1_used  = 1'b1;
+        rs2_used  = 1'b1;
+        reg_write = 1'b1;
+        wb_sel    = WB_ALU;
+        case (funct3)
+          3'b000: begin ai_op = AI_DOT8;  if (funct7 != 7'b0)        illegal_instr = 1'b1; end
+          3'b001: begin ai_op = AI_QRELU; if (funct7[6:5] != 2'b00)  illegal_instr = 1'b1; end
+          3'b010: begin ai_op = AI_MAX8;  if (funct7 != 7'b0)        illegal_instr = 1'b1; end
+          default: illegal_instr = 1'b1;
+        endcase
+      end
+
       OP_MISC_MEM: begin                          
         if (funct3 != 3'b000 && funct3 != 3'b001) illegal_instr = 1'b1;
       end

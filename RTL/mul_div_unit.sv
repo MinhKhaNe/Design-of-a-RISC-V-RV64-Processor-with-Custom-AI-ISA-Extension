@@ -1,6 +1,34 @@
 import rv64imafc_pkg::*;
 
-module mul_div_unit (
+// Multiplier configuration (the defaults reproduce the original iterative unit bit-for-bit and cycle-for-cycle).
+// Override from the simulator command line with  +define+MUL_MODE_VAL=1  etc., or by instance parameters.
+//
+//   MUL_MODE = 0  ITER : original iterative multiplier, 16 bits per cycle (IDLE + 4 + DONE -> 5 stall cycles)
+//              1  COMB : one 64x64 multiplier in EX, no stall                          (largest, longest path)
+//              2  LAT  : latency MODEL for design-space sweeps: operands are latched and the result (taken from a
+//                        combinational multiplier) is presented after MUL_STALL stall cycles.  It is NOT an area
+//                        model - use ITER / COMB / MULW_* for area and Fmax numbers.
+//   MULW_FAST  = 1   mulw (32x32 low half only, ~528 partial-product bits) is combinational in EX: no stall
+//   MULW_SHORT = 1   ITER mode only: mulw needs just the 2 low 16-bit chunks -> 3 stall cycles instead of 5, no extra area
+`ifndef MUL_MODE_VAL
+  `define MUL_MODE_VAL 0
+`endif
+`ifndef MUL_STALL_VAL
+  `define MUL_STALL_VAL 3
+`endif
+`ifndef MULW_FAST_VAL
+  `define MULW_FAST_VAL 0
+`endif
+`ifndef MULW_SHORT_VAL
+  `define MULW_SHORT_VAL 0
+`endif
+
+module mul_div_unit #(
+    parameter int MUL_MODE   = `MUL_MODE_VAL,
+    parameter int MUL_STALL  = `MUL_STALL_VAL,     // MUL_MODE = 2 only, >= 1
+    parameter bit MULW_FAST  = `MULW_FAST_VAL,
+    parameter bit MULW_SHORT = `MULW_SHORT_VAL
+) (
     input  logic         clk,
     input  logic         rst_n,
 
@@ -71,7 +99,45 @@ module mul_div_unit (
   mul_op_e      mul_op_q;
   logic [79:0]  mul_partial;
 
-  assign result           = op_is_mul_q ? mul_result : div_result;
+  // ---------------------------------------------------------------------
+  // Multiplier variants
+  // ---------------------------------------------------------------------
+  // Full-width combinational multiply, all five RV64M multiply ops, one shared 65x65 signed array.
+  function automatic logic [63:0] mul_full(input logic [63:0] x, input logic [63:0] y, input mul_op_e op);
+    logic                sx, sy;
+    logic signed [64:0]  mx, my;
+    logic signed [129:0] p;
+    sx = (op == MUL_MULH) || (op == MUL_MULHSU);            // rs1 signed
+    sy = (op == MUL_MULH);                                  // rs2 signed
+    mx = {sx & x[63], x};
+    my = {sy & y[63], y};
+    p  = mx * my;
+    case (op)
+      MUL_MUL:  mul_full = p[63:0];
+      MUL_MULW: mul_full = {{32{p[31]}}, p[31:0]};
+      default:  mul_full = p[127:64];                       // MULH / MULHSU / MULHU
+    endcase
+  endfunction
+
+  // mulw only needs the low 32 bits of a 32x32 product (about 528 partial-product bits instead of 4096)
+  function automatic logic [63:0] mulw_fast(input logic [63:0] x, input logic [63:0] y);
+    logic [31:0] w;
+    w = x[31:0] * y[31:0];
+    mulw_fast = {{32{w[31]}}, w};
+  endfunction
+
+  logic        is_mulw, fast_now, req_fsm, lat_one;
+  logic [63:0] fast_result, lat_result;
+
+  assign is_mulw     = (mul_op == MUL_MULW);
+  assign fast_now    = is_mul && ((MUL_MODE == 1) || (MULW_FAST && is_mulw));   // finishes in the cycle it enters EX
+  assign req_fsm     = req && !fast_now;                                         // only the other ops use the FSM
+  assign lat_one     = is_mul && (MUL_MODE == 2) && (MUL_STALL == 1);           // LAT model with 1 stall: IDLE -> DONE
+  assign fast_result = (MULW_FAST && is_mulw) ? mulw_fast(a, b) : mul_full(a, b, mul_op);
+  assign lat_result  = mul_full(mul_a_q, mul_b_orig_q, mul_op_q);
+
+  assign result      = fast_now ? fast_result :
+                       op_is_mul_q ? ((MUL_MODE == 2) ? lat_result : mul_result) : div_result;
   assign div_r_shifted    = {div_r_reg[62:0], div_q_reg[63]};
   assign div_trial        = {1'b0, div_r_shifted} - {1'b0, div_d_reg};
   assign sel_is_signed    = op_is_signed_div(div_op);
@@ -85,7 +151,7 @@ module mul_div_unit (
   assign sel_div_by_zero  = (sel_b_ext == 64'b0);
   assign sel_overflow     = sel_is_signed &&  (sel_a_ext == 64'h8000_0000_0000_0000) &&
                                               (sel_b_ext == 64'hFFFF_FFFF_FFFF_FFFF);
-  assign busy             = (state == S_IDLE && req) || (state == S_RUN);
+  assign busy             = (state == S_IDLE && req_fsm) || (state == S_RUN);
   assign done             = (state == S_DONE);
   assign mul_partial      = mul_a_q * mplier[63:48];   // 64 x 16 -> 80
 
@@ -93,7 +159,7 @@ module mul_div_unit (
   always_comb begin
     state_n = state;
     unique case (state)
-      S_IDLE:  if (req)             state_n = S_RUN;
+      S_IDLE:  if (req_fsm)         state_n = lat_one ? S_DONE : S_RUN;
       S_RUN:   if (cyc_left == 7'd0) state_n = S_DONE;
       S_DONE:                        state_n = S_IDLE;
     endcase
@@ -110,15 +176,23 @@ module mul_div_unit (
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       cyc_left <= 7'd0;
-    end else if (state == S_IDLE && req) begin
+    end else if (state == S_IDLE && req_fsm) begin
       op_is_mul_q <= is_mul;
       if (is_mul) begin
         mul_op_q     <= mul_op;
         mul_a_q      <= a;
         mul_b_orig_q <= b;
-        mplier       <= b;
         acc          <= 128'b0;
-        cyc_left     <= 7'(MUL_CYCLES - 1);
+        if (MUL_MODE == 2) begin                    // latency model: (MUL_STALL - 1) RUN cycles, or none for MUL_STALL = 1
+          mplier   <= b;
+          cyc_left <= 7'((MUL_STALL > 1) ? MUL_STALL - 2 : 0);
+        end else if (MULW_SHORT && (mul_op == MUL_MULW)) begin
+          mplier   <= {b[31:0], 32'b0};             // only the low 32 multiplier bits matter: 2 chunks, MSB chunk first
+          cyc_left <= 7'd1;
+        end else begin                              // original behaviour
+          mplier   <= b;
+          cyc_left <= 7'(MUL_CYCLES - 1);
+        end
       end else begin
         div_op_q       <= div_op;
         div_is_word_q  <= sel_is_word;

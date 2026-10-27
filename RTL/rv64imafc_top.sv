@@ -39,6 +39,9 @@ module rv64imafc_top #(
   logic           id_rs1_fp, id_rs2_fp;
   logic           id_is_fpu, id_uses_rm, id_fp_reg_write, id_is_csr;
   logic           id_is_amo, id_is_lr, id_is_sc;
+  logic           id_is_ai;
+  ai_op_e         id_ai_op;
+  logic [4:0]     id_ai_shamt;
   amo_op_e        id_amo_op;
   fpu_op_e        id_fpu_op;
   logic [2:0]     id_funct3;
@@ -84,6 +87,9 @@ module rv64imafc_top #(
   logic           idex_rs1_fp, idex_rs2_fp;
   logic           idex_is_fpu, idex_uses_rm, idex_is_csr;
   logic           idex_is_amo, idex_is_lr, idex_is_sc;
+  logic           idex_is_ai;
+  ai_op_e         idex_ai_op;
+  logic [4:0]     idex_ai_shamt;
   amo_op_e        idex_amo_op;
   fpu_op_e        idex_fpu_op;
   logic [2:0]     idex_funct3;
@@ -130,6 +136,10 @@ module rv64imafc_top #(
 
   // RV64F: FPU / fcsr
   logic           fpu_req, fpu_busy, ex_busy;
+  logic           ai_req, ai_busy;
+  logic           ai_pipe_ex;          // AI_LAT=3: the Xai instruction in EX behaves like a load for hazard detection
+  logic           exmem_is_ai;         // AI_LAT=3: the instruction in MEM is an Xai instruction (result finished in MEM)
+  logic [63:0]    ai_result;
   logic [63:0]    fpu_result;
   logic [4:0]     fpu_flags;
   logic [2:0]     frm, rm_eff;
@@ -160,7 +170,7 @@ module rv64imafc_top #(
   assign ex_jal_target    = idex_pc + idex_imm;
   assign ex_jalr_target   = ex_alu_result & ~64'h1;
   assign mdu_req          = idex_valid && (idex_is_mul || idex_is_div);
-  assign ex_busy          = mdu_busy || fpu_busy;
+  assign ex_busy          = mdu_busy || fpu_busy || ai_busy;
   assign stall            = hazard_stall || ex_busy;
   assign pc_next          = pc + (if_is_compressed ? 64'd2 : 64'd4);
   assign if_is_compressed = (if_instr[1:0] != 2'b11);
@@ -230,6 +240,8 @@ module rv64imafc_top #(
       .uses_rm       (id_uses_rm),
       .fp_reg_write  (id_fp_reg_write),
       .is_csr        (id_is_csr),
+      .is_ai         (id_is_ai),
+      .ai_op         (id_ai_op),
       .is_amo        (id_is_amo),
       .is_lr         (id_is_lr),
       .is_sc         (id_is_sc),
@@ -254,6 +266,7 @@ module rv64imafc_top #(
 
   assign id_rs3    = ifid_instr[31:27];
   assign id_funct3 = ifid_instr[14:12];
+  assign id_ai_shamt = ifid_instr[29:25];          // qrelu shift amount
 
   imm_gen imm_gen_inst (
       .instr    (ifid_instr),
@@ -292,7 +305,7 @@ module rv64imafc_top #(
   );
 
   hazard_unit hazard_inst (
-      .idex_mem_read (idex_mem_read && idex_valid),
+      .idex_mem_read ((idex_mem_read || ai_pipe_ex) && idex_valid),
       .idex_rd       (idex_rd),
       .idex_rd_fp    (idex_fp_reg_write),
       .ifid_rs1      (id_rs1),
@@ -333,6 +346,9 @@ module rv64imafc_top #(
       idex_uses_rm      <= id_uses_rm;
       idex_fp_reg_write <= id_fp_reg_write;
       idex_is_csr       <= id_is_csr;
+      idex_is_ai        <= id_is_ai;
+      idex_ai_op        <= id_ai_op;
+      idex_ai_shamt     <= id_ai_shamt;
       idex_is_amo       <= id_is_amo;
       idex_is_lr        <= id_is_lr;
       idex_is_sc        <= id_is_sc;
@@ -469,7 +485,29 @@ module rv64imafc_top #(
       .retire    (ex_retire)
   );
 
-  assign ex_result = idex_is_fpu                   ? fpu_result :
+  // ---------------- Xai: AI instructions (custom-0) ----------------
+  `ifndef AI_LAT_VAL
+    `define AI_LAT_VAL 1
+  `endif
+  localparam int AI_LAT = `AI_LAT_VAL;                  // 1 = combinational in EX, 2 = operands registered (one stall cycle)
+  localparam bit AI_PIPE = (AI_LAT == 3);     // 3 = pipelined EX/MEM, no stall; result finished in MEM (like a load)
+  assign ai_pipe_ex = AI_PIPE && idex_is_ai;
+  assign ai_req = idex_valid && idex_is_ai && !ex_illegal;
+
+  ai_unit #(.AI_LAT(AI_LAT)) ai_unit_inst (
+      .clk    (clk),
+      .rst_n  (rst_n),
+      .req    (ai_req),
+      .op     (idex_ai_op),
+      .shamt  (idex_ai_shamt),
+      .a      (fwd_rs1),
+      .b      (fwd_rs2),
+      .busy   (ai_busy),
+      .result (ai_result)
+  );
+
+  assign ex_result = (idex_is_ai && !AI_PIPE)    ? ai_result  :
+                     idex_is_fpu                   ? fpu_result :
                      idex_is_csr                   ? csr_rdata  :
                      (idex_is_mul || idex_is_div)  ? mdu_result : ex_alu_result;
 
@@ -545,6 +583,7 @@ module rv64imafc_top #(
       exmem_is_amo        <= 1'b0;  
       exmem_is_lr         <= 1'b0;  
       exmem_is_sc         <= 1'b0;
+      exmem_is_ai         <= 1'b0;
     end else if (ex_busy) begin
       exmem_valid        <= 1'b0;
       exmem_reg_write    <= 1'b0;
@@ -553,6 +592,7 @@ module rv64imafc_top #(
       exmem_is_amo       <= 1'b0;
       exmem_is_lr        <= 1'b0;
       exmem_is_sc        <= 1'b0;
+      exmem_is_ai        <= 1'b0;
     end else begin
       exmem_alu_result    <= ex_result;
       exmem_store_data    <= fwd_rs2;
@@ -566,6 +606,7 @@ module rv64imafc_top #(
       exmem_is_amo        <= idex_is_amo && idex_valid && !ex_illegal;
       exmem_is_lr         <= idex_is_lr  && idex_valid && !ex_illegal;
       exmem_is_sc         <= idex_is_sc  && idex_valid && !ex_illegal;
+      exmem_is_ai         <= AI_PIPE && idex_is_ai && idex_valid && !ex_illegal;
       exmem_amo_op        <= idex_amo_op;
       exmem_valid         <= idex_valid;
     end
@@ -623,7 +664,7 @@ module rv64imafc_top #(
       memwb_rd            <= 5'b0;
     end else begin
       memwb_mem_rdata  <= exmem_is_sc ? {63'b0, !sc_ok} : mem_rdata;
-      memwb_alu_result <= exmem_alu_result;
+      memwb_alu_result <= exmem_is_ai ? ai_result : exmem_alu_result;   // AI_LAT=3: Xai result is finished in MEM
       memwb_pc_next    <= exmem_pc_next;
       memwb_rd         <= exmem_rd;
       memwb_reg_write  <= exmem_reg_write;

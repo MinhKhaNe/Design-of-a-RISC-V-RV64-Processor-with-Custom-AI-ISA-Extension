@@ -168,4 +168,13 @@ package rv64imafc_pkg;
     AMO_MAXU = 4'd8
   } amo_op_e;
 
+  // Xai: AI-acceleration extension in the custom-0 opcode space (dot8 / qrelu / max8)
+  localparam logic [6:0] OP_CUSTOM0 = 7'b0001011;
+
+  typedef enum logic [2:0] {
+    AI_DOT8  = 3'd0,   // funct3 = 000
+    AI_QRELU = 3'd1,   // funct3 = 001, shift in funct7[4:0]
+    AI_MAX8  = 3'd2    // funct3 = 010
+  } ai_op_e;
+
 endpackage
