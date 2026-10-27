@@ -1,0 +1,6 @@
+item,value
+date (UTC),2026-10-27 12:43
+git commit,n/a (uncommitted changes!)
+simulator,Questa Sim-64 vsim 2021.2_1 Simulator 2021.05 May 15 2021
+riscv gcc,riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0
+python,3.12.3

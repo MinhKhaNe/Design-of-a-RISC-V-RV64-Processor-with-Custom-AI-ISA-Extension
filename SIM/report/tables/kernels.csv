@@ -1,0 +1,7 @@
+kernel,baseline,scalar opt,Xai,Xai vs opt,Xai vs baseline
+dot product (256),3595,2485,299,8.31x,12.02x
+GEMM 16x16x16,59501,40872,2956,13.83x,20.13x
+conv3x3 16x16->14x14,31089,15201,3025,5.03x,10.28x
+requant + ReLU,3319,2410,499,4.83x,6.65x
+maxpool,1546,1091,205,5.32x,7.54x
+total,99050,62059,6984,8.89x,14.18x

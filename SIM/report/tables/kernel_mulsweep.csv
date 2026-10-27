@@ -1,0 +1,7 @@
+multiplier,mulw stall,baseline,scalar opt,Xai,Xai vs opt,Xai vs baseline
+iter,5,99050,62059,6984,8.89x,14.18x
+mulw_short,3,86818,49827,6984,7.13x,12.43x
+lat3,3,86818,49827,6984,7.13x,12.43x
+lat1,1,74586,37595,6984,5.38x,10.68x
+mulw_fast,0,68470,31479,6984,4.51x,9.80x
+comb,0,68470,31479,6984,4.51x,9.80x

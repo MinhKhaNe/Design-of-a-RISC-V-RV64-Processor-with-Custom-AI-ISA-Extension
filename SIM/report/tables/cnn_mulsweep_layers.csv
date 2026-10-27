@@ -1,0 +1,7 @@
+multiplier,conv1,conv2,fc,requant,pool
+iter,7.54x,17.76x,16.65x,7.90x,9.28x
+mulw_short,5.73x,13.51x,12.66x,7.90x,9.28x
+lat3,5.73x,13.51x,12.66x,7.90x,9.28x
+lat1,3.93x,9.26x,8.68x,7.90x,9.28x
+mulw_fast,3.02x,7.14x,6.68x,7.90x,9.28x
+comb,3.02x,7.14x,6.68x,7.90x,9.28x

@@ -1,0 +1,19 @@
+test,result,seconds,detail
+rtl_tb,PASS,2.5,"390 programs, 7901 checks, 0 failed"
+ai_ref_host,PASS,0.2,
+host_smoke,PASS,0.0,
+host_baseline,PASS,0.1,
+host_opt,PASS,0.1,
+host_ai,PASS,0.1,
+host_nn,PASS,0.3,
+mul_model,PASS,0.1,
+mul_unit_sim,PASS,2.7,
+ai_unit_sim,PASS,2.1,
+ai_core_sim,PASS,2.1,
+a_core_sim,PASS,2.1,
+fpu_unit_sim,SKIP,0.0,"regress.mk: cannot find gen_vectors.py in any ../*/ folder (copy gen_vectors.py, fpu_model"
+bm_smoke,PASS,2.1,
+bm_baseline,PASS,2.5,
+bm_opt,PASS,2.3,
+bm_ai,PASS,2.1,
+bm_nn,PASS,8.3,

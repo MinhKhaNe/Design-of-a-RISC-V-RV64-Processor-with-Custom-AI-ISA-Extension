@@ -1,0 +1,190 @@
+% requires \usepackage{booktabs}
+\begin{table}[t]
+\centering
+\caption{Provenance of these numbers}
+\label{tab:provenance}
+\begin{tabular}{ll}
+\toprule
+item & value \\
+\midrule
+date (UTC) & 2026-10-27 12:43 \\
+git commit & n/a (uncommitted changes!) \\
+simulator & Questa Sim-64 vsim 2021.2\_1 Simulator 2021.05 May 15 2021 \\
+riscv gcc & riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0 \\
+python & 3.12.3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Kernel cycles on the core (default configuration)}
+\label{tab:kernels}
+\begin{tabular}{lrrrrr}
+\toprule
+kernel & baseline & scalar opt & Xai & Xai vs opt & Xai vs baseline \\
+\midrule
+dot product (256) & 3595 & 2485 & 299 & 8.31x & 12.02x \\
+GEMM 16x16x16 & 59501 & 40872 & 2956 & 13.83x & 20.13x \\
+conv3x3 16x16$\to$14x14 & 31089 & 15201 & 3025 & 5.03x & 10.28x \\
+requant + ReLU & 3319 & 2410 & 499 & 4.83x & 6.65x \\
+maxpool & 1546 & 1091 & 205 & 5.32x & 7.54x \\
+total & 99050 & 62059 & 6984 & 8.89x & 14.18x \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{CNN (INT8, digits 8x8) per layer, image 0}
+\label{tab:cnn_layers}
+\begin{tabular}{lrrrrrl}
+\toprule
+layer & scalar & Xai & speedup & scalar c/unit & Xai c/unit & unit \\
+\midrule
+conv1 3x3 1$\to$8 & 21636 & 2870 & 7.54x & 8.35 & 1.11 & MAC \\
+requant1 & 3762 & 477 & 7.89x & 13.06 & 1.66 & elem \\
+conv2 3x3 8$\to$16 & 154088 & 8677 & 17.76x & 8.36 & 0.47 & MAC \\
+requant2 & 3346 & 423 & 7.91x & 13.07 & 1.65 & elem \\
+maxpool 2x2 & 1141 & 123 & 9.28x & 17.83 & 1.92 & out \\
+fc 64$\to$10 & 5345 & 321 & 16.65x & 8.35 & 0.50 & MAC \\
+sum of layers & 189318 & 12891 & 14.69x &  &  &  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{CNN whole inference (includes argmax)}
+\label{tab:cnn_total}
+\begin{tabular}{lrrrr}
+\toprule
+ & cycles & instructions & CPI & cycles / MAC \\
+\midrule
+scalar & 189318 & 79820 & 2.37 & 8.74 \\
+Xai & 12891 & 12108 & 1.06 & 0.595 \\
+speedup & 14.69x & 6.59x &  &  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Kernels: cycles for each multiplier}
+\label{tab:kernel_mulsweep}
+\begin{tabular}{lrrrrrr}
+\toprule
+multiplier & mulw stall & baseline & scalar opt & Xai & Xai vs opt & Xai vs baseline \\
+\midrule
+iter & 5 & 99050 & 62059 & 6984 & 8.89x & 14.18x \\
+mulw\_short & 3 & 86818 & 49827 & 6984 & 7.13x & 12.43x \\
+lat3 & 3 & 86818 & 49827 & 6984 & 7.13x & 12.43x \\
+lat1 & 1 & 74586 & 37595 & 6984 & 5.38x & 10.68x \\
+mulw\_fast & 0 & 68470 & 31479 & 6984 & 4.51x & 9.80x \\
+comb & 0 & 68470 & 31479 & 6984 & 4.51x & 9.80x \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{CNN: scalar vs Xai for each multiplier of the scalar core}
+\label{tab:cnn_mulsweep}
+\begin{tabular}{llrrrr}
+\toprule
+multiplier & meaning & mulw stall & scalar cycles & Xai cycles & Xai speedup \\
+\midrule
+iter & iterative 16 b/cycle (original) & 5 & 189318 & 12891 & 14.69x \\
+mulw\_short & iterative, mulw in 2 chunks & 3 & 145990 & 12891 & 11.32x \\
+lat3 & latency model, 3 stalls & 3 & 145990 & 12891 & 11.32x \\
+lat1 & latency model, 1 stall & 1 & 102662 & 12891 & 7.96x \\
+mulw\_fast & 32x32 mulw in EX & 0 & 80998 & 12891 & 6.28x \\
+comb & 64x64 combinational in EX & 0 & 80998 & 12891 & 6.28x \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{CNN: speedup per layer for each multiplier}
+\label{tab:cnn_mulsweep_layers}
+\begin{tabular}{lrrrrr}
+\toprule
+multiplier & conv1 & conv2 & fc & requant & pool \\
+\midrule
+iter & 7.54x & 17.76x & 16.65x & 7.90x & 9.28x \\
+mulw\_short & 5.73x & 13.51x & 12.66x & 7.90x & 9.28x \\
+lat3 & 5.73x & 13.51x & 12.66x & 7.90x & 9.28x \\
+lat1 & 3.93x & 9.26x & 8.68x & 7.90x & 9.28x \\
+mulw\_fast & 3.02x & 7.14x & 6.68x & 7.90x & 9.28x \\
+comb & 3.02x & 7.14x & 6.68x & 7.90x & 9.28x \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Functional regression on every configuration}
+\label{tab:config_matrix}
+\begin{tabular}{lllllllllll}
+\toprule
+test & ai1\_iter & ai1\_mulw\_short & ai1\_lat1 & ai1\_mulw\_fast & ai1\_comb & ai2\_iter & ai2\_mulw\_short & ai2\_lat1 & ai2\_mulw\_fast & ai2\_comb \\
+\midrule
+rtl\_tb & pass & pass & pass & pass & pass & pass & pass & pass & pass & pass \\
+ai\_core\_sim & pass & pass & pass & pass & pass & pass & pass & pass & pass & pass \\
+a\_core\_sim & pass & pass & pass & pass & pass & pass & pass & pass & pass & pass \\
+bm\_smoke & pass & pass & pass & pass & pass & pass & pass & pass & pass & pass \\
+bm\_baseline & pass & pass & pass & pass & pass & pass & pass & pass & pass & pass \\
+bm\_opt & pass & pass & pass & pass & pass & pass & pass & pass & pass & pass \\
+bm\_ai & pass & pass & pass & pass & pass & pass & pass & pass & pass & pass \\
+bm\_nn & pass & pass & pass & pass & pass & pass & pass & pass & pass & pass \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Cycles on every configuration (ai<AI\_LAT>\_<multiplier>)}
+\label{tab:config_cycles}
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+workload & ai1\_iter & ai1\_mulw\_short & ai1\_lat1 & ai1\_mulw\_fast & ai1\_comb & ai2\_iter & ai2\_mulw\_short & ai2\_lat1 & ai2\_mulw\_fast & ai2\_comb \\
+\midrule
+baseline kernels & 99050 & 86818 & 74586 & 68470 & 68470 & 99050 & 86818 & 74586 & 68470 & 68470 \\
+scalar opt kernels & 62059 & 49827 & 37595 & 31479 & 31479 & 62059 & 49827 & 37595 & 31479 & 31479 \\
+Xai kernels & 6984 & 6984 & 6984 & 6984 & 6984 & 8193 & 8193 & 8193 & 8193 & 8193 \\
+CNN scalar & 189318 & 145990 & 102662 & 80998 & 80998 & 189318 & 145990 & 102662 & 80998 & 80998 \\
+CNN Xai & 12891 & 12891 & 12891 & 12891 & 12891 & 16299 & 16299 & 16299 & 16299 & 16299 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Regression tests (last run)}
+\label{tab:verification}
+\begin{tabular}{llrl}
+\toprule
+test & result & seconds & detail \\
+\midrule
+rtl\_tb & PASS & 2.5 & 390 programs, 7901 checks, 0 failed \\
+ai\_ref\_host & PASS & 0.2 &  \\
+host\_smoke & PASS & 0.0 &  \\
+host\_baseline & PASS & 0.1 &  \\
+host\_opt & PASS & 0.1 &  \\
+host\_ai & PASS & 0.1 &  \\
+host\_nn & PASS & 0.3 &  \\
+mul\_model & PASS & 0.1 &  \\
+mul\_unit\_sim & PASS & 2.7 &  \\
+ai\_unit\_sim & PASS & 2.1 &  \\
+ai\_core\_sim & PASS & 2.1 &  \\
+a\_core\_sim & PASS & 2.1 &  \\
+fpu\_unit\_sim & SKIP & 0.0 & regress.mk: cannot find gen\_vectors.py in any ../*/ folder (copy gen\_vectors.py, fpu\_model \\
+bm\_smoke & PASS & 2.1 &  \\
+bm\_baseline & PASS & 2.5 &  \\
+bm\_opt & PASS & 2.3 &  \\
+bm\_ai & PASS & 2.1 &  \\
+bm\_nn & PASS & 8.3 &  \\
+\bottomrule
+\end{tabular}
+\end{table}

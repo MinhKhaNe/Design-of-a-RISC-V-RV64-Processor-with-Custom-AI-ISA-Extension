@@ -1,0 +1,4 @@
+,cycles,instructions,CPI,cycles / MAC
+scalar,189318,79820,2.37,8.74
+Xai,12891,12108,1.06,0.595
+speedup,14.69x,6.59x,,

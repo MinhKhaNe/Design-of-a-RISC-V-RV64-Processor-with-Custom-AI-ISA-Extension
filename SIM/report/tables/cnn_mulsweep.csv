@@ -1,0 +1,7 @@
+multiplier,meaning,mulw stall,scalar cycles,Xai cycles,Xai speedup
+iter,iterative 16 b/cycle (original),5,189318,12891,14.69x
+mulw_short,"iterative, mulw in 2 chunks",3,145990,12891,11.32x
+lat3,"latency model, 3 stalls",3,145990,12891,11.32x
+lat1,"latency model, 1 stall",1,102662,12891,7.96x
+mulw_fast,32x32 mulw in EX,0,80998,12891,6.28x
+comb,64x64 combinational in EX,0,80998,12891,6.28x

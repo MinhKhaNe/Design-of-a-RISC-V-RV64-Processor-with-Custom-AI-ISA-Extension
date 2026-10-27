@@ -1,0 +1,151 @@
+
+Discarded input sections
+
+ .text          0x0000000000000000        0x0 /tmp/ccvOkhbJ.o
+ .data          0x0000000000000000        0x0 /tmp/ccvOkhbJ.o
+ .bss           0x0000000000000000        0x0 /tmp/ccvOkhbJ.o
+ .text          0x0000000000000000        0x0 /tmp/ccUna3W0.o
+ .data          0x0000000000000000        0x0 /tmp/ccUna3W0.o
+ .bss           0x0000000000000000        0x0 /tmp/ccUna3W0.o
+ .comment       0x0000000000000000       0x23 /tmp/ccUna3W0.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+ROM              0x0000000000000000 0x0000000000010000 xr
+RAM              0x0000000000010000 0x0000000000010000 xrw
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD /tmp/ccvOkhbJ.o
+LOAD /tmp/ccUna3W0.o
+LOAD /usr/lib/gcc/riscv64-unknown-elf/13.2.0/rv64imac/lp64/libgcc.a
+                0x0000000000000100                __mailbox_size = 0x100
+
+.text           0x0000000000000000     0x1d92
+ *(.text.init)
+ .text.init     0x0000000000000000       0x34 /tmp/ccvOkhbJ.o
+                0x0000000000000000                _start
+                0x0000000000000032                _trap
+ *(.text .text.*)
+ .text.nn_s_conv1
+                0x0000000000000034      0x406 /tmp/ccUna3W0.o
+ .text.nn_s_requant
+                0x000000000000043a       0xd2 /tmp/ccUna3W0.o
+ .text.nn_s_conv2
+                0x000000000000050c      0x54e /tmp/ccUna3W0.o
+ .text.nn_s_pool
+                0x0000000000000a5a      0x466 /tmp/ccUna3W0.o
+ .text.nn_s_fc  0x0000000000000ec0      0x434 /tmp/ccUna3W0.o
+ .text.nn_x_conv1
+                0x00000000000012f4      0x1f0 /tmp/ccUna3W0.o
+ .text.nn_x_requant1
+                0x00000000000014e4       0x24 /tmp/ccUna3W0.o
+ .text.nn_x_requant2
+                0x0000000000001508       0x24 /tmp/ccUna3W0.o
+ .text.nn_x_conv2
+                0x000000000000152c      0x160 /tmp/ccUna3W0.o
+ .text.nn_x_pool
+                0x000000000000168c       0x5c /tmp/ccUna3W0.o
+ .text.nn_x_fc  0x00000000000016e8       0xe4 /tmp/ccUna3W0.o
+ .text.startup.main
+                0x00000000000017cc      0x5c6 /tmp/ccUna3W0.o
+                0x00000000000017cc                main
+
+.rodata         0x0000000000010000      0xbb8
+ *(.rodata .rodata.*)
+ .rodata.nn_expect
+                0x0000000000010000      0x140 /tmp/ccUna3W0.o
+ .rodata.nn_img
+                0x0000000000010140      0x200 /tmp/ccUna3W0.o
+ .rodata.nn_bf  0x0000000000010340       0x28 /tmp/ccUna3W0.o
+ .rodata.nn_wf  0x0000000000010368      0x280 /tmp/ccUna3W0.o
+ .rodata.nn_b2  0x00000000000105e8       0x40 /tmp/ccUna3W0.o
+ .rodata.nn_w2  0x0000000000010628      0x480 /tmp/ccUna3W0.o
+ .rodata.nn_w1p
+                0x0000000000010aa8       0xc0 /tmp/ccUna3W0.o
+ .rodata.nn_w1  0x0000000000010b68       0x48 /tmp/ccUna3W0.o
+ *(.srodata .srodata.*)
+ .srodata.nn_label
+                0x0000000000010bb0        0x8 /tmp/ccUna3W0.o
+
+.rela.dyn       0x0000000000010bb8        0x0
+ .rela.text.init
+                0x0000000000010bb8        0x0 /tmp/ccvOkhbJ.o
+
+.data           0x0000000000010bb8        0x0
+ *(.data .data.*)
+                0x00000000000113b8                __global_pointer$ = (. + 0x800)
+ *(.sdata .sdata.*)
+
+.bss            0x0000000000010bb8     0x1658
+                0x0000000000010bb8                __bss_start = .
+ *(.sbss .sbss.*)
+ *(.bss .bss.*)
+ .bss.bx        0x0000000000010bb8      0xb08 /tmp/ccUna3W0.o
+ .bss.bs        0x00000000000116c0      0xb08 /tmp/ccUna3W0.o
+ .bss.img       0x00000000000121c8       0x48 /tmp/ccUna3W0.o
+ *(COMMON)
+                0x0000000000012210                . = ALIGN (0x8)
+                0x0000000000012210                __bss_end = .
+                0x000000000001ff00                _mailbox = ((ORIGIN (RAM) + LENGTH (RAM)) - __mailbox_size)
+                0x000000000001ff00                _stack_top = _mailbox
+                0x0000000000000001                ASSERT (((__bss_end + 0x400) <= _stack_top), dmem too small: data+bss leave <1KB for the stack)
+
+/DISCARD/
+ *(.comment)
+ *(.eh_frame*)
+ *(.note*)
+OUTPUT(sw_build/nn_bench/nn_bench.elf elf64-littleriscv)
+
+.riscv.attributes
+                0x0000000000000000       0x3d
+ .riscv.attributes
+                0x0000000000000000       0x3b /tmp/ccvOkhbJ.o
+ .riscv.attributes
+                0x000000000000003b       0x3d /tmp/ccUna3W0.o
+
+.debug_line     0x0000000000000000     0x88f4
+ .debug_line    0x0000000000000000       0x8a /tmp/ccvOkhbJ.o
+ .debug_line    0x000000000000008a     0x886a /tmp/ccUna3W0.o
+
+.debug_line_str
+                0x0000000000000000       0xb4
+ .debug_line_str
+                0x0000000000000000       0xb4 /tmp/ccvOkhbJ.o
+                                         0x38 (size before relaxing)
+ .debug_line_str
+                0x00000000000000b4       0xea /tmp/ccUna3W0.o
+
+.debug_info     0x0000000000000000     0x3c43
+ .debug_info    0x0000000000000000       0x28 /tmp/ccvOkhbJ.o
+ .debug_info    0x0000000000000028     0x3c1b /tmp/ccUna3W0.o
+
+.debug_abbrev   0x0000000000000000      0x347
+ .debug_abbrev  0x0000000000000000       0x14 /tmp/ccvOkhbJ.o
+ .debug_abbrev  0x0000000000000014      0x333 /tmp/ccUna3W0.o
+
+.debug_aranges  0x0000000000000000      0x110
+ .debug_aranges
+                0x0000000000000000       0x30 /tmp/ccvOkhbJ.o
+ .debug_aranges
+                0x0000000000000030       0xe0 /tmp/ccUna3W0.o
+
+.debug_str      0x0000000000000000      0x303
+ .debug_str     0x0000000000000000      0x303 /tmp/ccvOkhbJ.o
+                                         0x44 (size before relaxing)
+ .debug_str     0x0000000000000303      0x2ec /tmp/ccUna3W0.o
+
+.debug_loclists
+                0x0000000000000000     0x44ee
+ .debug_loclists
+                0x0000000000000000     0x44ee /tmp/ccUna3W0.o
+
+.debug_rnglists
+                0x0000000000000000     0x14f3
+ .debug_rnglists
+                0x0000000000000000     0x14f3 /tmp/ccUna3W0.o
+
+.debug_frame    0x0000000000000000      0x248
+ .debug_frame   0x0000000000000000      0x248 /tmp/ccUna3W0.o

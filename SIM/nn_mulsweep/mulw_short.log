@@ -1,0 +1,132 @@
+make[1]: Entering directory '/home/nguyenminhkha/Desktop/Thesis/SIM'
+[bm_check] xong
+vlog -sv +define+MULW_SHORT_VAL=1 +incdir+sw_build/nn_bench -f rtl.f ../TB/tb_baremetal.sv
+QuestaSim-64 vlog 2021.2_1 Compiler 2021.05 May 15 2021
+Start time: 19:38:40 on Oct 27,2026
+vlog -sv "+define+MULW_SHORT_VAL=1" "+incdir+sw_build/nn_bench" -f rtl.f ../TB/tb_baremetal.sv 
+-- Compiling package rv64imafc_pkg
+** Warning: ../RTL/ai_unit.sv(1): (vlog-13233) Design unit "ai_unit_sv_unit" already exists and will be overwritten. Design unit compiled with different set of options.
+-- Compiling package ai_unit_sv_unit
+-- Importing package rv64imafc_pkg
+-- Compiling module ai_unit
+** Warning: ../RTL/amo_alu.sv(1): (vlog-13233) Design unit "amo_alu_sv_unit" already exists and will be overwritten. Design unit compiled with different set of options.
+-- Compiling package amo_alu_sv_unit
+-- Compiling module amo_alu
+-- Compiling module zicntr
+-- Compiling module fp_round
+-- Compiling module fp_regfile
+-- Compiling module fp_forward_unit
+-- Compiling module fcsr
+** Warning: ../RTL/fpu.sv(1): (vlog-13233) Design unit "fpu_sv_unit" already exists and will be overwritten. Design unit compiled with different set of options.
+-- Compiling package fpu_sv_unit
+-- Compiling module fpu
+-- Compiling module fp_unpack
+-- Compiling module regfile
+-- Compiling module forward_unit
+-- Compiling module hazard_unit
+** Warning: ../RTL/imm_gen.sv(1): (vlog-13233) Design unit "imm_gen_sv_unit" already exists and will be overwritten. Design unit compiled with different set of options.
+-- Compiling package imm_gen_sv_unit
+-- Compiling module imm_gen
+** Warning: ../RTL/alu.sv(1): (vlog-13233) Design unit "alu_sv_unit" already exists and will be overwritten. Design unit compiled with different set of options.
+-- Compiling package alu_sv_unit
+-- Compiling module alu
+-- Compiling module imem
+** Warning: ../RTL/dmem.sv(1): (vlog-13233) Design unit "dmem_sv_unit" already exists and will be overwritten. Design unit compiled with different set of options.
+-- Compiling package dmem_sv_unit
+-- Compiling module dmem
+** Warning: ../RTL/decoder.sv(1): (vlog-13233) Design unit "decoder_sv_unit" already exists and will be overwritten. Design unit compiled with different set of options.
+-- Compiling package decoder_sv_unit
+-- Compiling module decoder
+** Warning: ../RTL/branch_comp.sv(1): (vlog-13233) Design unit "branch_comp_sv_unit" already exists and will be overwritten. Design unit compiled with different set of options.
+-- Compiling package branch_comp_sv_unit
+-- Compiling module branch_comp
+** Warning: ../RTL/mul_div_unit.sv(1): (vlog-13233) Design unit "mul_div_unit_sv_unit" already exists and will be overwritten. Design unit compiled with different set of options.
+-- Compiling package mul_div_unit_sv_unit
+-- Compiling module mul_div_unit
+-- Compiling module c_expander
+** Warning: ../RTL/rv64imafc_top.sv(1): (vlog-13233) Design unit "rv64imafc_top_sv_unit" already exists and will be overwritten. Design unit compiled with different set of options.
+-- Compiling package rv64imafc_top_sv_unit
+-- Compiling module rv64imafc_top
+-- Compiling module tb_baremetal
+
+Top level modules:
+	tb_baremetal
+End time: 19:38:40 on Oct 27,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 10
+cd sw_build/nn_bench && vsim -c  -lib /home/nguyenminhkha/Desktop/Thesis/SIM/work tb_baremetal  +TIMEOUT=5000000 -do "run -all; quit -f"
+Reading pref.tcl
+
+# 2021.2_1
+
+# vsim -c -lib /home/nguyenminhkha/Desktop/Thesis/SIM/work tb_baremetal "+TIMEOUT=5000000" -do "run -all; quit -f" 
+# Start time: 19:38:41 on Oct 27,2026
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# //  Questa Sim-64
+# //  Version 2021.2_1 linux_x86_64 May 15 2021
+# //
+# //  Copyright 1991-2021 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.rv64imafc_pkg(fast)
+# Loading work.dmem_sv_unit(fast)
+# Loading work.amo_alu_sv_unit(fast)
+# Loading work.branch_comp_sv_unit(fast)
+# Loading work.alu_sv_unit(fast)
+# Loading work.mul_div_unit_sv_unit(fast)
+# Loading work.ai_unit_sv_unit(fast)
+# Loading work.fpu_sv_unit(fast)
+# Loading work.imm_gen_sv_unit(fast)
+# Loading work.decoder_sv_unit(fast)
+# Loading work.rv64imafc_top_sv_unit(fast)
+# Loading work.tb_baremetal(fast)
+# run -all
+# TRACE cycle=100000 PC=0x0000000000000778 stall=1 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=200000 PC=0x0000000000000974 stall=1 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=300000 PC=0x00000000000008ac stall=1 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=400000 PC=0x00000000000005b2 stall=1 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=500000 PC=0x00000000000004f2 stall=0 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=600000 PC=0x0000000000000996 stall=1 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=700000 PC=0x0000000000000976 stall=0 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=800000 PC=0x000000000000003e stall=0 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=900000 PC=0x00000000000008be stall=0 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=1000000 PC=0x00000000000008a4 stall=1 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=1100000 PC=0x0000000000000a76 stall=0 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=1200000 PC=0x00000000000007d4 stall=1 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=1300000 PC=0x00000000000007b2 stall=0 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=1400000 PC=0x000000000000070c stall=0 flush=0 illegal=0 MBOX0=0x0000000000000000
+# TRACE cycle=1500000 PC=0x00000000000006f4 stall=0 flush=0 illegal=0 MBOX0=0x0000000000000000
+# program finished after 1596010 cycles; status code = 0  -> PASS
+#   MBOX[2] = 16452  (0x0000000000004044)
+#   MBOX[3] = 3762  (0x0000000000000eb2)
+#   MBOX[4] = 117224  (0x000000000001c9e8)
+#   MBOX[5] = 3346  (0x0000000000000d12)
+#   MBOX[6] = 1141  (0x0000000000000475)
+#   MBOX[7] = 4065  (0x0000000000000fe1)
+#   MBOX[8] = 2870  (0x0000000000000b36)
+#   MBOX[9] = 477  (0x00000000000001dd)
+#   MBOX[10] = 8677  (0x00000000000021e5)
+#   MBOX[11] = 423  (0x00000000000001a7)
+#   MBOX[12] = 123  (0x000000000000007b)
+#   MBOX[13] = 321  (0x0000000000000141)
+#   MBOX[14] = 145990  (0x0000000000023a46)
+#   MBOX[15] = 79820  (0x00000000000137cc)
+#   MBOX[16] = 12891  (0x000000000000325b)
+#   MBOX[17] = 12108  (0x0000000000002f4c)
+#   MBOX[20] = 8  (0x0000000000000008)
+#   MBOX[21] = 8  (0x0000000000000008)
+#   MBOX[22] = 2  (0x0000000000000002)
+#   MBOX[23] = 2  (0x0000000000000002)
+# ** Note: $finish    : /home/nguyenminhkha/Desktop/Thesis/SIM/../TB/tb_baremetal.sv(92)
+#    Time: 15960165 ns  Iteration: 1  Instance: /tb_baremetal
+# End time: 19:38:48 on Oct 27,2026, Elapsed time: 0:00:07
+# Errors: 0, Warnings: 0
+make[1]: Leaving directory '/home/nguyenminhkha/Desktop/Thesis/SIM'

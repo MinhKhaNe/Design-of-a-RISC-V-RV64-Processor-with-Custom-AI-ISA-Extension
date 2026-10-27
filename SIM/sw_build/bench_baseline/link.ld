@@ -1,0 +1,45 @@
+/* Harvard layout: code in imem (ROM, address 0); everything the program LOADS from
+ * (.rodata/.data) plus .bss/stack/mailbox lives in dmem (RAM).
+ * RAM_BASE must be a multiple of DMEM size: dmem ignores the upper address bits. */
+OUTPUT_ARCH(riscv)
+ENTRY(_start)
+
+MEMORY {
+  ROM (rx)  : ORIGIN = 0,            LENGTH = 65536
+  RAM (rwx) : ORIGIN = 0x10000,   LENGTH = 65536
+}
+
+__mailbox_size = 256;
+
+SECTIONS {
+  .text : {
+    KEEP(*(.text.init))
+    *(.text .text.*)
+  } > ROM
+
+  .rodata : ALIGN(8) {
+    *(.rodata .rodata.*)
+    *(.srodata .srodata.*)
+  } > RAM
+
+  .data : ALIGN(8) {
+    *(.data .data.*)
+    __global_pointer$ = . + 0x800;
+    *(.sdata .sdata.*)
+  } > RAM
+
+  .bss (NOLOAD) : ALIGN(8) {
+    __bss_start = .;
+    *(.sbss .sbss.*)
+    *(.bss .bss.*)
+    *(COMMON)
+    . = ALIGN(8);
+    __bss_end = .;
+  } > RAM
+
+  _mailbox   = ORIGIN(RAM) + LENGTH(RAM) - __mailbox_size;
+  _stack_top = _mailbox;
+  ASSERT(__bss_end + 1024 <= _stack_top, "dmem too small: data+bss leave <1KB for the stack")
+
+  /DISCARD/ : { *(.comment) *(.eh_frame*) *(.note*) }
+}

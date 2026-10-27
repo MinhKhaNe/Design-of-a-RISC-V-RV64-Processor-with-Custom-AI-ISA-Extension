@@ -1,0 +1,9 @@
+test,ai1_iter,ai1_mulw_short,ai1_lat1,ai1_mulw_fast,ai1_comb,ai2_iter,ai2_mulw_short,ai2_lat1,ai2_mulw_fast,ai2_comb
+rtl_tb,pass,pass,pass,pass,pass,pass,pass,pass,pass,pass
+ai_core_sim,pass,pass,pass,pass,pass,pass,pass,pass,pass,pass
+a_core_sim,pass,pass,pass,pass,pass,pass,pass,pass,pass,pass
+bm_smoke,pass,pass,pass,pass,pass,pass,pass,pass,pass,pass
+bm_baseline,pass,pass,pass,pass,pass,pass,pass,pass,pass,pass
+bm_opt,pass,pass,pass,pass,pass,pass,pass,pass,pass,pass
+bm_ai,pass,pass,pass,pass,pass,pass,pass,pass,pass,pass
+bm_nn,pass,pass,pass,pass,pass,pass,pass,pass,pass,pass

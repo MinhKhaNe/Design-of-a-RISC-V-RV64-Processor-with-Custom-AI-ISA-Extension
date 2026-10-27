@@ -1,0 +1,8 @@
+layer,scalar,Xai,speedup,scalar c/unit,Xai c/unit,unit
+conv1 3x3 1->8,21636,2870,7.54x,8.35,1.11,MAC
+requant1,3762,477,7.89x,13.06,1.66,elem
+conv2 3x3 8->16,154088,8677,17.76x,8.36,0.47,MAC
+requant2,3346,423,7.91x,13.07,1.65,elem
+maxpool 2x2,1141,123,9.28x,17.83,1.92,out
+fc 64->10,5345,321,16.65x,8.35,0.50,MAC
+sum of layers,189318,12891,14.69x,,,

@@ -1,0 +1,59 @@
+# vsim -c -lib /home/nguyenminhkha/Desktop/Thesis/SIM/work rv64imafc_a_tb -voptargs="+acc" -do "run -all; quit -f" 
+# Start time: 20:33:38 on Oct 27,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Note: (vopt-143) Recognized 1 FSM in module "fpu(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "mul_div_unit(fast)".
+# //  Questa Sim-64
+# //  Version 2021.2_1 linux_x86_64 May 15 2021
+# //
+# //  Copyright 1991-2021 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.rv64imafc_a_tb(fast)
+# Loading work.rv64imafc_pkg(fast)
+# Loading work.rv64imafc_top_sv_unit(fast)
+# Loading work.rv64imafc_top(fast)
+# Loading work.imem(fast)
+# Loading work.c_expander(fast)
+# Loading work.decoder_sv_unit(fast)
+# Loading work.decoder(fast)
+# Loading work.imm_gen_sv_unit(fast)
+# Loading work.imm_gen(fast)
+# Loading work.regfile(fast)
+# Loading work.fp_regfile(fast)
+# Loading work.hazard_unit(fast)
+# Loading work.forward_unit(fast)
+# Loading work.fp_forward_unit(fast)
+# Loading work.fpu_sv_unit(fast)
+# Loading work.fpu(fast)
+# Loading work.fp_unpack(fast)
+# Loading work.fp_round(fast)
+# Loading work.fcsr(fast)
+# Loading work.zicntr(fast)
+# Loading work.ai_unit_sv_unit(fast)
+# Loading work.ai_unit(fast)
+# Loading work.mul_div_unit_sv_unit(fast)
+# Loading work.mul_div_unit(fast)
+# Loading work.alu_sv_unit(fast)
+# Loading work.alu(fast)
+# Loading work.branch_comp_sv_unit(fast)
+# Loading work.branch_comp(fast)
+# Loading work.amo_alu_sv_unit(fast)
+# Loading work.amo_alu(fast)
+# Loading work.dmem_sv_unit(fast)
+# Loading work.dmem(fast)
+# run -all
+# PASS  (0 mismatches)
+# ** Note: $finish    : /home/nguyenminhkha/Desktop/Thesis/SIM/../TB/rv64imafc_a_tb.sv(51)
+#    Time: 6035 ns  Iteration: 1  Instance: /rv64imafc_a_tb
+# End time: 20:33:39 on Oct 27,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
