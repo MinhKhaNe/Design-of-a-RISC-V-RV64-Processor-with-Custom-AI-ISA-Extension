@@ -2,6 +2,8 @@
 """Golden-data generator for the baseline AI kernels.
 
 Writes src/bench_data.h : fixed int8 inputs + the expected outputs computed with NumPy
+(all arrays 8-byte aligned; plus the SIMD-friendly layouts used by bench_ai.c: B transposed, the 3x3 weights
+ as three zero-padded 64-bit rows, and 8 bytes of zero padding after the image)
 (and cross-checked with plain-Python loops, so a NumPy dtype surprise cannot slip through).
 
 Kernel chain (all INT8 in, INT32 accumulate, as in quantised CNN inference):
@@ -55,8 +57,13 @@ for y in range(PH):
 
 def arr(ctype, name, a):
     flat = a.flatten().tolist()
-    body = ',\n  '.join(', '.join(str(v) for v in flat[i:i + 16]) for i in range(0, len(flat), 16))
-    return "static const %s %s[%d] = {\n  %s\n};\n" % (ctype, name, len(flat), body)
+    body = ',\n  '.join(', '.join(str(v) if ctype != 'uint64_t' else '0x%016xULL' % v for v in flat[i:i + 16 if ctype != 'uint64_t' else i + 4]) for i in range(0, len(flat), 16 if ctype != 'uint64_t' else 4))
+    return "static const %s %s[%d] __attribute__((aligned(8))) = {\n  %s\n};\n" % (ctype, name, len(flat), body)
+
+# ---- SIMD layouts (same logical data) ----
+gemm_bt = np.ascontiguousarray(B.T)                                      # B transposed: rows of BT = columns of B
+conv_wp = [sum((int(w[ky, kx]) & 0xFF) << (8 * kx) for kx in range(3)) for ky in range(3)]   # bytes: w[ky][0..2], 0 x5
+img_padded = np.concatenate([img.flatten(), np.zeros(8, dtype=np.int8)])  # 8 zero bytes: 64-bit loads may run past the last row
 
 out = sys.argv[1] if len(sys.argv) > 1 else 'src/bench_data.h'
 with open(out, 'w') as f:
@@ -67,8 +74,8 @@ with open(out, 'w') as f:
     f.write("\n")
     f.write(arr('int8_t', 'dot_a', dot_a) + arr('int8_t', 'dot_b', dot_b))
     f.write("static const int32_t dot_exp = %d;\n\n" % dot_exp)
-    f.write(arr('int8_t', 'gemm_a', A) + arr('int8_t', 'gemm_b', B) + arr('int32_t', 'gemm_exp', C))
-    f.write(arr('int8_t', 'conv_img', img) + arr('int8_t', 'conv_w', w) + arr('int32_t', 'conv_exp', conv))
+    f.write(arr('int8_t', 'gemm_a', A) + arr('int8_t', 'gemm_b', B) + arr('int8_t', 'gemm_bt', gemm_bt) + arr('int32_t', 'gemm_exp', C))
+    f.write(arr('int8_t', 'conv_img', img_padded) + arr('int8_t', 'conv_w', w) + arr('uint64_t', 'conv_wp', np.array(conv_wp, dtype=object)) + arr('int32_t', 'conv_exp', conv))
     f.write(arr('int8_t', 'req_exp', act) + arr('int8_t', 'pool_exp', pool))
     f.write("\n#endif\n")
 print("wrote", out)

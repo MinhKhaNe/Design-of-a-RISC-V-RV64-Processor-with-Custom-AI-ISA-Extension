@@ -1500,7 +1500,13 @@ module tb_rv64imafc;
 
     // ---- traps -----------------------------------------------------------------------
     t_ill32("opcode 1111111",                 32'hFFFF_FFFF);
-    t_ill32("custom-0 opcode",                enc_i(0, 0, 3'b000, 7, 7'h0B));
+    // custom-0 is the Xai extension (dot8 / qrelu / max8): only its RESERVED encodings are illegal now
+    t_ill32("custom-0 reserved funct3=3",          enc_i(0,       0, 3'b011, 7, 7'h0B));
+    t_ill32("custom-0 reserved funct3=7",          enc_i(0,       0, 3'b111, 7, 7'h0B));
+    t_ill32("custom-0 dot8 with funct7!=0",        enc_i(12'h020, 0, 3'b000, 7, 7'h0B));
+    t_ill32("custom-0 qrelu with funct7[6:5]!=0",  enc_i(12'h400, 0, 3'b001, 7, 7'h0B));
+    t_ill32("custom-0 max8 with funct7!=0",        enc_i(12'h020, 0, 3'b010, 7, 7'h0B));
+    t_ill32("custom-1 opcode",                     enc_i(0,       0, 3'b000, 7, 7'h2B));
     t_ill32("JALR funct3=1",                  enc_i(0, 1, 3'b001, 7, 7'h67));
     t_ill32("BRANCH funct3=2",                enc_b(8, 2, 1, 3'b010));
     t_ill32("BRANCH funct3=3",                enc_b(8, 2, 1, 3'b011));
